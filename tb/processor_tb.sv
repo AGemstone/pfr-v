@@ -11,10 +11,11 @@ module processor_tb();
   logic Zero_Flag;
   logic [1:0] branchOp;
   logic [N-1:0] PCBranch_db;
+  logic [1:0] fwA_db,fwB_db;
   
   // instantiate device under test
   processor_arm  dut (CLOCK_50, reset, DM_writeData, DM_addr, DM_writeEnable, dump,
-            instr,Zero_Flag,branchOp,PCBranch_db
+            instr,Zero_Flag,branchOp,PCBranch_db,fwA_db,fwB_db
   );
     
   // generate clock

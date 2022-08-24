@@ -17,17 +17,21 @@ module datapath #(parameter N = 64)
                     output logic DM_writeEnable, DM_readEnable ,
                     output logic Zero_Flag,
                     output logic [1:0] branchOp,
-                    output logic [N-1:0] PCBranch_db);					
+                    output logic [N-1:0] PCBranch_db,
+                    output logic[1:0] fwA_db,fwB_db);					
                     
     logic PCSrc;
     logic [N-1:0] PCBranch_E, aluResult_E, writeData_E, writeData3; 
     logic [N-1:0] signImm_D, readData1_D, readData2_D;
     logic zero_E;
     logic [95:0] qIF_ID;
-    logic [271:0] qID_EX;
+    logic [281:0] qID_EX;
     logic [203:0] qEX_MEM;
     logic [134:0] qMEM_WB;
-    
+    logic [1:0] fwA, fwB;
+    logic [4:0] rs1, rs2;
+    logic [N-1:0] fwA_out,fwB_out;
+
     fetch 	#(64) 	FETCH 	(.PCSrc_F(PCSrc),
                              .clk(clk),
                              .reset(reset),
@@ -49,26 +53,28 @@ module datapath #(parameter N = 64)
                              .signImm_D(signImm_D), 
                              .readData1_D(readData1_D),
                              .readData2_D(readData2_D),
-                             .wa3_D(qMEM_WB[4:0]));				
+                             .wa3_D(qMEM_WB[4:0]),
+                             .rs1(rs1),
+                             .rs2(rs2));	
                                                                                                     
                                     
-    flopr 	#(272)	ID_EX 	(.clk(clk),
+    flopr 	#(282)	ID_EX 	(.clk(clk),
                              .reset(reset), 
-                             .d({BranchZero, AluSrc, AluControl, Branch, memRead, memWrite, regWrite, memtoReg,	
+                             .d({rs2, rs1, BranchZero, AluSrc, AluControl, Branch, memRead, memWrite, regWrite, memtoReg,	
                                  qIF_ID[95:32], signImm_D, readData1_D, readData2_D, qIF_ID[4:0]}),
                              .q(qID_EX));	
     
-                                        
+                                       
     execute 	#(64) 	EXECUTE 	(.AluSrc(qID_EX[270]),
                                      .AluControl(qID_EX[269:266]),
                                      .PC_E(qID_EX[260:197]), 
                                      .signImm_E(qID_EX[196:133]), 
-                                     .readData1_E(qID_EX[132:69]), 
-                                     .readData2_E(qID_EX[68:5]), 
+                                     .readData1_E(fwA_out), 
+                                     .readData2_E(fwB_out), 
                                      .PCBranch_E(PCBranch_E), 
                                      .aluResult_E(aluResult_E), 
                                      .writeData_E(writeData_E), 
-                                     .zero_E(zero_E));											
+                                     .zero_E(zero_E));					
                                             
                                     
     flopr 	#(204)	EX_MEM 	(.clk(clk),
@@ -81,7 +87,28 @@ module datapath #(parameter N = 64)
                                  .Branch_Z(qEX_MEM[203]),
                                  .zero_W(qEX_MEM[133]), 
                                  .PCSrc_W(PCSrc));
-            
+
+    mux3 FWA (.s(fwA),
+              .d0(qID_EX[132:69]),
+              .d1(writeData3),
+              .d2(qEX_MEM[132:69]),
+              .y(fwA_out));
+
+    mux3 FWB (.s(fwB),
+             .d0(qID_EX[68:5]),
+             .d1(writeData3),
+             .d2(qEX_MEM[132:69]),
+             .y(fwB_out));
+
+    forwarding fwd (.EX_MEM_RegWrite(qEX_MEM[199]), 
+                    .MEM_WB_RegWrite(qMEM_WB[134]),
+                    .EX_MEM_RegisterRd(qEX_MEM[4:0]),
+                    .MEM_WB_RegisterRd(qMEM_WB[4:0]),
+                    .ID_EX_RegisterRs1(qID_EX[276:272]), 
+                    .ID_EX_RegisterRs2(qID_EX[281:277]),
+                    .fwA(fwA), 
+                    .fwB(fwB));
+
     
     // Salida de señales a Data Memory
     assign DM_writeData = qEX_MEM[68:5];
@@ -105,5 +132,6 @@ module datapath #(parameter N = 64)
     assign Zero_Flag = qEX_MEM[133];
     assign branchOp = qEX_MEM[203:202];
     assign PCBranch_db = IM_addr;
-
+    assign fwA_db = fwA;
+    assign fwB_db = fwB;
 endmodule

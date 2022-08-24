@@ -8,7 +8,8 @@ module processor_arm #(parameter N = 64)
                             output logic [10:0] current_inst,
                             output logic Zero_Flag,
                             output logic [1:0] branchOp,
-                            output logic [N-1:0] PCBranch_db);
+                            output logic [N-1:0] PCBranch_db,
+                            output logic [1:0] fwA_db,fwB_db);
                             
     logic [31:0] q;		
     logic [3:0] AluControl;
@@ -51,7 +52,9 @@ module processor_arm #(parameter N = 64)
                              .DM_readEnable(DM_readEnable),
                              .Zero_Flag(Zero_Flag),
                              .branchOp(branchOp),
-                             .PCBranch_db(PCBranch_db)
+                             .PCBranch_db(PCBranch_db),
+                             .fwA_db(fwA_db),
+                             .fwB_db(fwB_db)
                              );				
              
                     

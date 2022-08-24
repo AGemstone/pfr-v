@@ -5,7 +5,8 @@ module decode #(parameter N = 64)
 					input logic [N-1:0] writeData3_D,
 					input logic [31:0] instr_D,
 					output logic [N-1:0] signImm_D, readData1_D, readData2_D, 
-					input logic [4:0] wa3_D); // Eliminar para single cycle processor
+					input logic [4:0] wa3_D,
+					output logic [4:0] rs1, rs2); // Eliminar para single cycle processor
 					
 	logic [4:0] ra2;			
 	
@@ -20,5 +21,6 @@ module decode #(parameter N = 64)
 	
 									
 	signext 		ext		(.a(instr_D), .y(signImm_D));	
-	
+	assign rs1 = instr_D[9:5];
+	assign rs2 = ra2;
 endmodule

@@ -81,41 +81,51 @@ module imem #(parameter N = 32)(
 	// 	'h00000000,
 	// 	'hb400001f
 	// };
-	localparam int prog_leng = 14;
-	assign rom[0:prog_leng-1] = '{
-   	'hd1000484, 	// sub	x4, x4, #0x1
-   	'h0, 	// add	xzr, xzr, xzr
-   	'h0, 	// add	xzr, xzr, xzr
-   	'h0, 	// add	xzr, xzr, xzr
-  	'h91000421, 	// add	x1, x1, #0x1
-  	'h0, 	// add	xzr, xzr, xzr
-  	'h0, 	// add	xzr, xzr, xzr
-  	'h0, 	// add	xzr, xzr, xzr
-  	'hb5ffff04, 	// cbnz	x4, 0 <loop>
-  	'h0, 	// add	xzr, xzr, xzr
-  	'h0, 	// add	xzr, xzr, xzr
-  	'h0, 	// add	xzr, xzr, xzr
-  	'hf8000001, 	// stur	x1, [x0]
-  	'hb400001f  	// cbz	xzr, 34 <infl>
+	// localparam int prog_leng = 14;
+	// assign rom[0: prog_leng-1] = '{
+   	// 	'hd1000484, 	// sub	x4, x4, #0x1
+   	// 	'h0, 	// add	xzr, xzr, xzr
+   	// 	'h0, 	// add	xzr, xzr, xzr
+   	// 	'h0, 	// add	xzr, xzr, xzr
+  	// 	'h91000421, 	// add	x1, x1, #0x1
+  	// 	'h0, 	// add	xzr, xzr, xzr
+  	// 	'h0, 	// add	xzr, xzr, xzr
+  	// 	'h0, 	// add	xzr, xzr, xzr
+  	// 	'hb5ffff04, 	// cbnz	x4, 0 <loop>
+  	// 	'h0, 	// add	xzr, xzr, xzr
+  	// 	'h0, 	// add	xzr, xzr, xzr
+  	// 	'h0, 	// add	xzr, xzr, xzr
+  	// 	'hf8000001, 	// stur	x1, [x0]
+  	// 	'hb400001f  	// cbz	xzr, 34 <infl>
+	// };
+	localparam int prog_leng = 21;
+	assign rom[0: prog_leng-1] = '{
+  		'h91000421, 	// add	x1, x1, #0x1
+  		'h91000421, 	// add	x1, x1, #0x1
+  		'h91000421, 	// add	x1, x1, #0x1
+		'h0,
+		'h91000421, 	// add	x1, x1, #0x1
+		'h0,
+		'h91000421, 	// add	x1, x1, #0x1
+		'h0,
+		'h0,
+		'h0,
+  		'hf8000001, 	// stur	x1, [x0]
+		'h0,
+		'h0,
+		'h0,
+  		'hf8400002, 	// ldur	x2, [x0]
+  		'h8b010042, 	// add	x2, x2, x1
+		'h0,
+		'h0,
+		'h0,
+  		'hf8008002, 	// stur	x2, [x0, #8]
+  		'hb400001f 	// cbz	xzr, 20 <loop>
+
 
 	};
 
-	// subitest
-	// localparam int prog_leng = 8;
-	// assign rom[0:prog_leng-1] = '{
-	// 	'h00000000,
-	// 	'h00000000,
-	// 	'hd1000c42, //subi x2, x2, #3
-	// 	'h00000000,
-	// 	'h00000000,
-	// 	'h00000000,
-	// 	'hf8000102, //stur x2, [x8, #0]
-	// 	'hb400001f
-	// };
-	// 1101 0001 00 _ 000000000011 _ 00010_ 00010
 
-	// f8000102
-	// 1111 1000 000 0 0000 0000 00 01000 00010
 
     assign rom [prog_leng:63] = '{(64-prog_leng){'0}};
     
