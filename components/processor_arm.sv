@@ -9,7 +9,8 @@ module processor_arm #(parameter N = 64)
                             output logic Zero_Flag,
                             output logic [1:0] branchOp,
                             output logic [N-1:0] PCBranch_db,
-                            output logic [1:0] fwA_db,fwB_db);
+                            output logic [1:0] fwA_db,fwB_db,
+                            output logic hazard);
                             
     logic [31:0] q;		
     logic [3:0] AluControl;
@@ -17,7 +18,7 @@ module processor_arm #(parameter N = 64)
     logic [N-1:0] DM_readData, IM_address;  //DM_addr, DM_writeData
     logic DM_readEnable; //DM_writeEnable
     logic [10:0] instr;
-    
+    logic IF_ID_writeEnable;
     assign current_inst = instr;
 
     controller 		c 			(.instr(instr), 
@@ -54,7 +55,9 @@ module processor_arm #(parameter N = 64)
                              .branchOp(branchOp),
                              .PCBranch_db(PCBranch_db),
                              .fwA_db(fwA_db),
-                             .fwB_db(fwB_db)
+                             .fwB_db(fwB_db),
+                             .hazard(hazard),
+                             .IF_ID_writeEnable(IF_ID_writeEnable)
                              );				
              
                     
@@ -71,8 +74,9 @@ module processor_arm #(parameter N = 64)
                                      .dump(dump)); 							
          
                             
-    flopr #(11)		IF_ID_TOP(.clk(CLOCK_50),
-                              .reset(reset), 
+    flopre #(11)		IF_ID_TOP(.clk(CLOCK_50),
+                              .reset(reset),
+                              .enable(IF_ID_writeEnable),
                               .d(q[31:21]), 
                               .q(instr));
      

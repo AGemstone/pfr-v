@@ -10,7 +10,8 @@ module datapath #(parameter N = 64)
                     input logic memRead,
                     input logic memWrite,
                     input logic regWrite,	
-                    input logic memtoReg,									
+                    input logic memtoReg,
+                    
                     input logic [31:0] IM_readData,
                     input logic [N-1:0] DM_readData,
                     output logic [N-1:0] IM_addr, DM_addr, DM_writeData,
@@ -18,28 +19,40 @@ module datapath #(parameter N = 64)
                     output logic Zero_Flag,
                     output logic [1:0] branchOp,
                     output logic [N-1:0] PCBranch_db,
-                    output logic[1:0] fwA_db,fwB_db);					
+                    output logic[1:0] fwA_db,fwB_db,
+                    output logic hazard,
+                    output logic IF_ID_writeEnable);			
                     
     logic PCSrc;
     logic [N-1:0] PCBranch_E, aluResult_E, writeData_E, writeData3; 
     logic [N-1:0] signImm_D, readData1_D, readData2_D;
     logic zero_E;
+    logic PCEnable, ControlEnable;
     logic [95:0] qIF_ID;
     logic [281:0] qID_EX;
     logic [203:0] qEX_MEM;
     logic [134:0] qMEM_WB;
     logic [1:0] fwA, fwB;
     logic [4:0] rs1, rs2;
+    logic [10:0] controlMux;
     logic [N-1:0] fwA_out,fwB_out;
+    
+
+    assign controlMux = ControlEnable ? 
+                        {BranchZero, AluSrc, AluControl, 
+                         Branch, memRead, memWrite, regWrite, memtoReg} :
+                        'b0;
 
     fetch 	#(64) 	FETCH 	(.PCSrc_F(PCSrc),
                              .clk(clk),
                              .reset(reset),
+                             .PCEnable(PCEnable),
                              .PCBranch_F(qEX_MEM[197:134]),
                              .imem_addr_F(IM_addr));								
                     
     
-    flopr 	#(96)		IF_ID 	(.clk(clk),
+    flopre 	#(96)		IF_ID 	(.clk(clk),
+                                 .enable(IF_ID_writeEnable),
                                  .reset(reset), 
                                  .d({IM_addr, IM_readData}),
                                  .q(qIF_ID));
@@ -60,8 +73,9 @@ module datapath #(parameter N = 64)
                                     
     flopr 	#(282)	ID_EX 	(.clk(clk),
                              .reset(reset), 
-                             .d({rs2, rs1, BranchZero, AluSrc, AluControl, Branch, memRead, memWrite, regWrite, memtoReg,	
-                                 qIF_ID[95:32], signImm_D, readData1_D, readData2_D, qIF_ID[4:0]}),
+                             .d({rs2, rs1, controlMux,	
+                                 qIF_ID[95:32], signImm_D, readData1_D, 
+                                 readData2_D, qIF_ID[4:0]}),
                              .q(qID_EX));	
     
                                        
@@ -79,7 +93,8 @@ module datapath #(parameter N = 64)
                                     
     flopr 	#(204)	EX_MEM 	(.clk(clk),
                              .reset(reset), 
-                             .d({qID_EX[271],qID_EX[265:261], PCBranch_E, zero_E, aluResult_E, writeData_E, qID_EX[4:0]}),
+                             .d({qID_EX[271],qID_EX[265:261], PCBranch_E, 
+                                 zero_E, aluResult_E, writeData_E, qID_EX[4:0]}),
                              .q(qEX_MEM));	
     
                                         
@@ -109,6 +124,14 @@ module datapath #(parameter N = 64)
                     .fwA(fwA), 
                     .fwB(fwB));
 
+    hazard hdu (.ID_EX_MemRead(qID_EX[264]),
+                .ID_EX_RegisterRd(qID_EX[4:0]), 
+                .IF_ID_RegisterRs1(rs1), 
+                .IF_ID_RegisterRs2(rs2),
+                .ControlEnable(ControlEnable),
+                .PCEnable(PCEnable),
+                .IF_ID_writeEnable(IF_ID_writeEnable)
+                );
     
     // Salida de señales a Data Memory
     assign DM_writeData = qEX_MEM[68:5];
@@ -120,7 +143,8 @@ module datapath #(parameter N = 64)
     
     flopr 	#(135)	MEM_WB 	(.clk(clk),
                              .reset(reset), 
-                             .d({qEX_MEM[199:198], qEX_MEM[132:69],	DM_readData, qEX_MEM[4:0]}),
+                             .d({qEX_MEM[199:198], qEX_MEM[132:69],	DM_readData, 
+                                 qEX_MEM[4:0]}),
                              .q(qMEM_WB));
         
     
@@ -134,4 +158,5 @@ module datapath #(parameter N = 64)
     assign PCBranch_db = IM_addr;
     assign fwA_db = fwA;
     assign fwB_db = fwB;
+    assign hazard = ControlEnable | PCEnable | IF_ID_writeEnable;
 endmodule

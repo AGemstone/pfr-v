@@ -5,18 +5,9 @@
 		add	x1, x1, #0x1
 		and xzr, xzr, xzr
 		add	x1, x1, #0x1
-		and xzr, xzr, xzr
-		and xzr, xzr, xzr
-		and xzr, xzr, xzr
-  		stur x1, [x0]
-		and xzr, xzr, xzr
-		and xzr, xzr, xzr
-		and xzr, xzr, xzr
-  		ldur x2, [x0]
+  		stur	x1, [x0]
+  		ldur	x2, [x0]
   		add	x2, x2, x1
-		and xzr, xzr, xzr
-		and xzr, xzr, xzr
-		and xzr, xzr, xzr
-  		stur x2, [x0, #8]
+  		stur	x2, [x0, #8]
 loop:   cbz xzr, loop
 

@@ -98,34 +98,23 @@ module imem #(parameter N = 32)(
   	// 	'hf8000001, 	// stur	x1, [x0]
   	// 	'hb400001f  	// cbz	xzr, 34 <infl>
 	// };
-	localparam int prog_leng = 21;
-	assign rom[0: prog_leng-1] = '{
-  		'h91000421, 	// add	x1, x1, #0x1
-  		'h91000421, 	// add	x1, x1, #0x1
-  		'h91000421, 	// add	x1, x1, #0x1
-		'h0,
-		'h91000421, 	// add	x1, x1, #0x1
-		'h0,
-		'h91000421, 	// add	x1, x1, #0x1
-		'h0,
-		'h0,
-		'h0,
-  		'hf8000001, 	// stur	x1, [x0]
-		'h0,
-		'h0,
-		'h0,
-  		'hf8400002, 	// ldur	x2, [x0]
-  		'h8b010042, 	// add	x2, x2, x1
-		'h0,
-		'h0,
-		'h0,
-  		'hf8008002, 	// stur	x2, [x0, #8]
-  		'hb400001f 	// cbz	xzr, 20 <loop>
 
+	localparam int prog_leng = 12;
+	assign rom[0: prog_leng-1] = '{
+  		'h91000421 ,
+		'h91000421 ,
+		'h91000421 ,
+		'h8a1f03ff ,
+		'h91000421 ,
+		'h8a1f03ff ,
+		'h91000421 ,
+		'hf8000001 ,
+		'hf8400002 ,
+		'h8b010042 ,
+		'hf8008002 ,
+		'hb400001f 
 
 	};
-
-
 
     assign rom [prog_leng:63] = '{(64-prog_leng){'0}};
     
