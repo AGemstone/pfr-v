@@ -13,8 +13,7 @@ module alu #(
         4'b0001 : result = a | b;
         4'b0010 : result = a + b;
         4'b0110 : result = a - b;
-        4'b0111 : result = b;
-        4'b1100 : result = ~(a | b);
+        4'b0111 : result = ~(|{N{a - b}}) ? '1 : '0;
         default result = b;
     endcase
         assign zero = ~(|{N{result}});

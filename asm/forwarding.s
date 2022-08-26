@@ -1,13 +1,13 @@
-        add	x1, x1, #0x1
-  		add	x1, x1, #0x1
-  		add	x1, x1, #0x1
-        and xzr, xzr, xzr
-		add	x1, x1, #0x1
-		and xzr, xzr, xzr
-		add	x1, x1, #0x1
-  		stur	x1, [x0]
-  		ldur	x2, [x0]
+        add	a1, a1, 1
+  		add	a1, a1, 1
+  		add	a1, a1, 1
+        ADD x0, x0, 0
+		add	a1, a1, 1
+		ADD x0, x0, 0
+		add	a1, a1, 1
+  		sd  x1, [x0, #0]
+  		ld  x2, [x0, #0]
   		add	x2, x2, x1
-  		stur	x2, [x0, #8]
-loop:   cbz xzr, loop
+  		sd  x2, [x0, #8]
+loop:   beq x0, x0, loop
 

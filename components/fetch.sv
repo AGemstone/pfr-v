@@ -6,9 +6,11 @@ module fetch #(
     output logic[N-1: 0] imem_addr_F
 );
     logic[N-1: 0] PC_out, add4_out, mux_out;
+    
     adder #(N) add4 (.a(64'd4), 
                      .b(PC_out), 
                      .y(add4_out));
+
     mux2 #(N) mux (.s(PCSrc_F),
                    .d0(add4_out),
                    .d1(PCBranch_F),

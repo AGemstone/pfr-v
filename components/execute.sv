@@ -7,29 +7,23 @@ module execute #(
     output logic [N-1: 0] writeData_E, aluResult_E, PCBranch_E,
     output logic zero_E
 );
-    logic[N-1: 0]aluOut, mux_out, shift_out,PCBranch;
+    logic[N-1: 0] aluOut, mux_out, PCBranch;
     logic zero;
-    mux2 #(N) mux(
-        .s(AluSrc),
-        .d0(readData2_E),
-        .d1(signImm_E),
-        .y(mux_out)
-    );
-    sl2 #(N) shift(
-        .a(signImm_E),
-        .y(shift_out)
+    
+    mux2 #(N) mux(.s(AluSrc),
+                  .d0(readData2_E),
+                  .d1(signImm_E),
+                  .y(mux_out));
 
-    );
-    adder #(N) adder(
-        .a(shift_out),
-        .b(PC_E),
-        .y(PCBranch)
-    );
+    adder #(N) adder(.a({signImm_E[N-2:0], 1'b0}),
+                     .b(PC_E),
+                     .y(PCBranch));
+
     alu #(N) alu(.a(readData1_E), 
-    .b(mux_out),
-    .ALUControl(AluControl),
-    .zero(zero),
-    .result(aluOut));
+                 .b(mux_out),
+                 .ALUControl(AluControl),
+                 .zero(zero),
+                 .result(aluOut));
 
     assign writeData_E = readData2_E;
     assign aluResult_E = aluOut;
