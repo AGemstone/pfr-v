@@ -6,15 +6,14 @@ module alu #(
     output logic zero,
     output logic[N-1:0] result
 );
-
     always_comb
     case(ALUControl) 
         4'b0000 : result = a & b;
         4'b0001 : result = a | b;
         4'b0010 : result = a + b;
         4'b0110 : result = a - b;
-        4'b0111 : result = ~(|{N{a - b}}) ? '1 : '0;
+        4'b0111 : result = a - b;
         default result = b;
     endcase
-        assign zero = ~(|{N{result}});
+    assign zero = ALUControl == 4'b0111 ? (|{N{result}}) : ~(|{N{result}});
 endmodule

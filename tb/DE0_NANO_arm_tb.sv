@@ -1,7 +1,7 @@
 // Testbench DE0_NANO_PipelinedProcessorPatterson
 // Top-level Entity: DE0_NANO_arm
 
-module DE0_NANO_arm_tb();
+module DE0_NANO_tb();
 	logic [1:0] KEY;
 	logic CLOCK_50;
 	logic [7:0] LED;
@@ -9,7 +9,7 @@ module DE0_NANO_arm_tb();
 	logic dm_write_enable_out;
   
   // instantiate device under test
-  DE0_NANO_arm  dut (KEY,CLOCK_50,LED, write_data_out,dm_write_enable_out);
+  DE0_NANO  dut (KEY,CLOCK_50,LED, write_data_out,dm_write_enable_out);
     
   // generate clock
   always     // no sensitivity list, so it always executes

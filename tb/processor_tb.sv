@@ -7,17 +7,20 @@ module processor_tb();
 	logic        	DM_writeEnable;
 	logic [N-1:0] 	DM_writeData, DM_addr;
 	logic 			dump;
-  logic [10:0] instr ;
   logic Zero_Flag;
-  logic [1:0] branchOp;
-  logic [N-1:0] PCBranch_db;
-  logic [1:0] fwA_db,fwB_db;
-  logic hazard;
+  logic [16:0] current_inst;
+  logic [31:0] opcode;
   
   // instantiate device under test
-  processor_arm  dut (CLOCK_50, reset, DM_writeData, DM_addr, DM_writeEnable, dump,
-            instr,Zero_Flag,branchOp,PCBranch_db,fwA_db,fwB_db,hazard
-  );
+  processor_arm  dut (.CLOCK_50(CLOCK_50), 
+                      .reset(reset),
+                      .DM_writeData(DM_writeData), 
+                      .DM_addr(DM_addr),
+                      .DM_writeEnable(DM_writeEnable),
+                      .dump(dump),
+                      .Zero_Flag(Zero_Flag),
+                      .current_inst(current_inst),
+                      .opcode(opcode));
     
   // generate clock
   always     // no sensitivity list, so it always executes
@@ -29,8 +32,8 @@ module processor_tb();
   initial
     begin
       CLOCK_50 = 0; reset = 1; dump = 0;
-      #20 reset = 0; 
-      #5000 dump = 1; 
+      #25 reset = 0; 
+      #620 dump = 1; 
 	   #20 $stop;
 	end 
 endmodule

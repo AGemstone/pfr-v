@@ -7,9 +7,8 @@ module processor_arm #(parameter N = 64)
                             input	logic dump,
                             output logic [16:0] current_inst,
                             output logic Zero_Flag,
-                            output logic [N-1:0] PCBranch_db,
-                            output logic [1:0] fwA_db, fwB_db,
-                            output logic hazard);
+                            output logic [31:0] opcode
+                            );
                             
     logic [31:0] q;		
     logic [3:0] AluControl;
@@ -18,10 +17,10 @@ module processor_arm #(parameter N = 64)
     logic DM_readEnable; //DM_writeEnable
     logic [16:0] instr;
     assign current_inst = instr;
-
-    controller 	c(.funct7(instr[16:10]),
-                  .funct3(instr[9:7]), 
-                  .instr(instr[6:0]),
+    assign opcode = q;
+    controller 	c(.funct7(q[31:25]),
+                  .funct3(q[14:12]), 
+                  .instr(q[6:0]),
                   .AluControl(AluControl), 
                   .regWrite(regWrite), 
                   .AluSrc(AluSrc), 
@@ -47,10 +46,6 @@ module processor_arm #(parameter N = 64)
                        .DM_writeEnable(DM_writeEnable), 
                        .DM_readEnable(DM_readEnable),
                        .Zero_Flag(Zero_Flag),
-                       .PCBranch_db(PCBranch_db),
-                       .fwA_db(fwA_db),
-                       .fwB_db(fwB_db),
-                       .hazard(hazard),
                        .instr(instr)
                        );				
              
@@ -67,11 +62,4 @@ module processor_arm #(parameter N = 64)
                                      .readData(DM_readData), 
                                      .dump(dump)); 							
          
-                            
-    // flopre #(17) IF_ID_TOP(.clk(CLOCK_50),
-    //                        .reset(reset),
-    //                        .enable(IF_ID_writeEnable),
-    //                        .d({q[31:25], q[14:12], q[6:0]}), 
-    //                        .q(instr));
-     
 endmodule
