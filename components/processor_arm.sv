@@ -7,7 +7,8 @@ module processor_arm #(parameter N = 64)
                             input	logic dump,
                             output logic [16:0] current_inst,
                             output logic Zero_Flag,
-                            output logic [31:0] opcode
+                            output logic [31:0] opcode,
+                            output logic [5:0] control
                             );
                             
     logic [31:0] q;		
@@ -60,6 +61,8 @@ module processor_arm #(parameter N = 64)
                                      .address(DM_addr[8:3]), 
                                      .writeData(DM_writeData), 
                                      .readData(DM_readData), 
-                                     .dump(dump)); 							
+                                     .dump(dump)); 	
+
+    assign control = {AluSrc, memtoReg, regWrite, memRead, memWrite, Branch};
          
 endmodule

@@ -12,8 +12,8 @@ module alu #(
         4'b0001 : result = a | b;
         4'b0010 : result = a + b;
         4'b0110 : result = a - b;
-        4'b0111 : result = a - b;
+        4'b1110 : result = a - b;
         default result = b;
     endcase
-    assign zero = ALUControl == 4'b0111 ? (|{N{result}}) : ~(|{N{result}});
+    assign zero = ALUControl[3] == 1 ? (|{N{result}}) : ~(|{N{result}});
 endmodule

@@ -9,7 +9,6 @@ module datapath #(parameter N = 64)
                     input logic memWrite,
                     input logic regWrite,	
                     input logic memtoReg,
-
                     input logic [31:0] IM_readData,
                     input logic [N-1:0] DM_readData,
                     output logic [N-1:0] IM_addr, DM_addr, DM_writeData,
@@ -22,8 +21,6 @@ module datapath #(parameter N = 64)
     logic [N-1:0] PCBranch_E, aluResult_E, writeData_E, writeData3; 
     logic [N-1:0] signImm_D, readData1_D, readData2_D;
     logic zero_E;
-    logic [1:0] fwA, fwB;
-    logic [4:0] rs1, rs2;
 
     fetch #(64) FETCH (.PCSrc_F(PCSrc),
                        .clk(clk),
@@ -46,28 +43,26 @@ module datapath #(parameter N = 64)
                            .readData1_E(readData1_D), 
                            .readData2_E(readData2_D), 
                            .PCBranch_E(PCBranch_E), 
-                           .aluResult_E(aluResult_E), 
-                           .writeData_E(writeData_E), 
+                           .aluResult_E(DM_addr), 
+                           .writeData_E(DM_writeData), 
                            .zero_E(zero_E));					
                                                                    
     memory	MEMORY	(.Branch_W(Branch), 
                      .zero_W(zero_E), 
                      .PCSrc_W(PCSrc));
 
-    // Salida de señales a Data Memory
-    assign DM_writeData = writeData_E;
-    assign DM_addr = aluResult_E;
-    
+
     // Salida de señales de control:
     assign DM_writeEnable = memWrite;
     assign DM_readEnable = memRead;
         
-    writeback #(64) WRITEBACK (.aluResult_W(aluResult_E), 
+    writeback #(64) WRITEBACK (.aluResult_W(DM_addr), 
                                .DM_readData_W(DM_readData), 
                                .memtoReg(memtoReg), 
                                .writeData3_W(writeData3));		
     
     assign Zero_Flag = zero_E;
     assign instr = {IM_readData[31:25], IM_readData[14:12], IM_readData[6:0]};
+    
 
 endmodule

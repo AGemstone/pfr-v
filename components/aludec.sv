@@ -14,7 +14,7 @@ module aludec(input  logic [6:0] funct7,
 				alucontrol = 4'b0110;
 			// bne
 			else if (funct3 == 3'b001)
-				alucontrol = 4'b0111;
+				alucontrol = 4'b1110;
 			else  
 				alucontrol = 4'b1111;
 		else if ((aluop == 2'b10))

@@ -5,7 +5,7 @@ module fetch #(parameter N = 64) (
 );
     logic[N-1: 0] PC_out, add4_out, mux_out;
     
-    adder #(N) add4 (.a('d4), 
+    adder #(N) add4 (.a(64'd4), 
                      .b(PC_out), 
                      .y(add4_out));
 

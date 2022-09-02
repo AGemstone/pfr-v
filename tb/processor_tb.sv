@@ -10,6 +10,7 @@ module processor_tb();
   logic Zero_Flag;
   logic [16:0] current_inst;
   logic [31:0] opcode;
+  logic [5:0] control;
   
   // instantiate device under test
   processor_arm  dut (.CLOCK_50(CLOCK_50), 
@@ -20,19 +21,19 @@ module processor_tb();
                       .dump(dump),
                       .Zero_Flag(Zero_Flag),
                       .current_inst(current_inst),
-                      .opcode(opcode));
+                      .opcode(opcode),
+                      .control(control));
     
   // generate clock
   always     // no sensitivity list, so it always executes
     begin
       #5 CLOCK_50 = ~CLOCK_50; 
     end
-	 
-	 
+    
   initial
     begin
       CLOCK_50 = 0; reset = 1; dump = 0;
-      #25 reset = 0; 
+      #20 reset = 0; 
       #620 dump = 1; 
 	   #20 $stop;
 	end 
