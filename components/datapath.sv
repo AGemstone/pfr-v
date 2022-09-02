@@ -12,9 +12,10 @@ module datapath #(parameter N = 64)
                     input logic [31:0] IM_readData,
                     input logic [N-1:0] DM_readData,
                     output logic [N-1:0] IM_addr, DM_addr, DM_writeData,
-                    output logic DM_writeEnable, DM_readEnable ,
-                    output logic Zero_Flag,
-                    output logic [16:0] instr);
+                    output logic DM_writeEnable, DM_readEnable 
+                    //output logic Zero_Flag,
+                    //output logic [16:0] instr
+                    );
                     
     logic PCSrc;
     
@@ -61,8 +62,8 @@ module datapath #(parameter N = 64)
                                .memtoReg(memtoReg), 
                                .writeData3_W(writeData3));		
     
-    assign Zero_Flag = zero_E;
-    assign instr = {IM_readData[31:25], IM_readData[14:12], IM_readData[6:0]};
+    //assign Zero_Flag = zero_E;
+    //assign instr = {IM_readData[31:25], IM_readData[14:12], IM_readData[6:0]};
     
 
 endmodule

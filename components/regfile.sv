@@ -13,7 +13,7 @@ module regfile #(parameter BANK_WIDTH = 5, WIDTH = 64)
     
     always_ff@(posedge clk) begin
         if(clk) begin
-            if (we3 && wa3 != 5'b0) begin
+            if (we3 & wa3 != 5'b0) begin
                 ram[wa3] <= wd3;
             end
         end
