@@ -9,12 +9,9 @@ module aludec(input  logic [6:0] funct7,
 		if (aluop == 2'b00) 
 			alucontrol = 4'b0010;						
 		else if (aluop == 2'b01) 
-			// beq
-			if (funct3 == 3'b000)
+			// beq or bne
+			if (funct3 == 3'b000 | funct3 == 3'b001)
 				alucontrol = 4'b0110;
-			// bne
-			else if (funct3 == 3'b001)
-				alucontrol = 4'b1110;
 			else  
 				alucontrol = 4'b1111;
 		else if ((aluop == 2'b10))

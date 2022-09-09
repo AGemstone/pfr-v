@@ -2,9 +2,10 @@
 
 module datapath #(parameter N = 64)
                     (input logic reset, clk,							
-                    input logic AluSrc,
                     input logic [3:0] AluControl,
-                    input logic	Branch,
+                    input logic[2:0] Branch,
+                    input logic[1:0] regSel,
+                    input logic AluSrc,
                     input logic memRead,
                     input logic memWrite,
                     input logic regWrite,	
@@ -13,12 +14,9 @@ module datapath #(parameter N = 64)
                     input logic [N-1:0] DM_readData,
                     output logic [N-1:0] IM_addr, DM_addr, DM_writeData,
                     output logic DM_writeEnable, DM_readEnable 
-                    //output logic Zero_Flag,
-                    //output logic [16:0] instr
                     );
                     
     logic PCSrc;
-    
     logic [N-1:0] PCBranch_E, aluResult_E, writeData_E, writeData3; 
     logic [N-1:0] signImm_D, readData1_D, readData2_D;
     logic zero_E;
@@ -32,6 +30,7 @@ module datapath #(parameter N = 64)
     decode #(64) DECODE(.regWrite_D(regWrite),
                         .clk(clk),
                         .writeData3_D(writeData3),
+                        .regSel0(regSel[0]),
                         .instr_D(IM_readData),
                         .signImm_D(signImm_D), 
                         .readData1_D(readData1_D),
@@ -39,8 +38,9 @@ module datapath #(parameter N = 64)
                                        
     execute #(64) EXECUTE (.AluSrc(AluSrc),
                            .AluControl(AluControl),
-                           .PC_E(IM_addr), 
-                           .signImm_E(signImm_D), 
+                           .PC_E(IM_addr),
+                           .regSel1(regSel[1]),
+                           .signImm_E(signImm_D),
                            .readData1_E(readData1_D), 
                            .readData2_E(readData2_D), 
                            .PCBranch_E(PCBranch_E), 

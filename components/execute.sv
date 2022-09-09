@@ -2,33 +2,25 @@ module execute #(
     parameter N = 64
 ) (
     input logic [N-1: 0] PC_E, readData1_E, readData2_E, signImm_E,
-    input logic AluSrc,
+    input logic AluSrc, regSel1,
     input logic[3:0] AluControl,
     output logic [N-1: 0] writeData_E, aluResult_E, PCBranch_E,
     output logic zero_E
 );
-    logic[N-1: 0] aluOut, mux_out, PCBranch;
-    logic zero;
-    
-    mux2 #(N) mux(.s(AluSrc),
-                  .d0(readData2_E),
-                  .d1(signImm_E),
-                  .y(mux_out));
+    logic[N-1: 0] readData1, readData2, signedImm_PC,rea;
 
-    adder #(N) adder(.a({signImm_E[N-2:0], 1'b0}),
-                     .b(PC_E),
-                     .y(PCBranch));
 
-    alu #(N) alu(.a(readData1_E), 
-                 .b(mux_out),
+    alu #(N) alu(.a(readData1), 
+                 .b(readData2),
                  .ALUControl(AluControl),
-                 .zero(zero),
-                 .result(aluOut));
+                 .zero(zero_E),
+                 .result(aluResult_E));
 
     assign writeData_E = readData2_E;
-    assign aluResult_E = aluOut;
-    assign PCBranch_E  = PCBranch;
-    assign zero_E      = zero;
+    assign readData1 = regSel1 ? PC_E : readData1_E;
+    assign readData2 = AluSrc ? signImm_E : readData2_E;
+    assign signedImm_PC = (signImm_E << 1);
+    assign PCBranch_E  = signedImm_PC + PC_E;
 
     
 endmodule

@@ -14,9 +14,20 @@ start:
         or a3, a1, a0
         sd a3, 16(zero)
 
-loop:   
-        bne a0, a0, loop
+        andi a4, a1, -1
+        sd a4, 24(zero)
+
+        ori a5, a1, -1
+        sd a5, 32(zero)
+        
+        lui a6, 1000000
+        sd a6, 40(zero)
+
+        AUIPC a7, 1000000
+        sd a7, 48(zero)
+
+        bne ra, zero, loop
         add zero, zero, zero
-loop2:  
-        beq zero, zero, loop2
+loop:  
+        beq zero, zero, loop
         add zero, zero, zero
