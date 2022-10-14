@@ -4,12 +4,11 @@ module flopre #(parameter N = 64) (
     output logic[N-1:0] q
 );
 
-always_ff @(posedge clk)
-    if (enable) begin
-        if(reset) 
-            q = '0;
-        else 
-            q = d;
-    end
+always_ff @(posedge clk, posedge reset)
+    if(reset) 
+        q <= '0;
+    else if (enable) 
+        q <= d;
+    
     
 endmodule

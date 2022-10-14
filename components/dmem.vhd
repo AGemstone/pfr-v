@@ -11,7 +11,7 @@ use ieee.numeric_std.all;
 
 entity dmem is -- data memory	
    port(clk, memWrite, memRead:  in STD_LOGIC;
-       address :    in STD_LOGIC_VECTOR(5 downto 0);
+       address :    in STD_LOGIC_VECTOR(6 downto 0);
 		 writeData :    in STD_LOGIC_VECTOR(64-1 downto 0);
        readData:       out STD_LOGIC_VECTOR(64-1 downto 0);
        dump: in STD_LOGIC
@@ -19,7 +19,7 @@ entity dmem is -- data memory
 end;
 
 architecture behave of dmem is
- constant MAX_BOUND: Integer := 64;
+ constant MAX_BOUND: Integer := 128;
  constant MEMORY_DUMP_FILE: string := "mem.dump";
  
  type ramtype is array (MAX_BOUND-1 downto 0) of STD_LOGIC_VECTOR(64-1 downto 0);
@@ -49,10 +49,10 @@ begin
    process(clk, address, mem, memWrite, memRead)
 	begin 
 	  if clk'event and clk = '1' and memWrite = '1' then
-				mem(conv_integer("0" & address(5 downto 0))) <= writeData;
+				mem(conv_integer("0" & address(6 downto 0))) <= writeData;
 	  end if;
 	  if memRead = '1' then
-			readData <= mem(conv_integer("0" & address(5 downto 0))); -- word aligned
+			readData <= mem(conv_integer("0" & address(6 downto 0))); -- word aligned
 	  else
 			readData <= (others => '0');
 	  end if;
