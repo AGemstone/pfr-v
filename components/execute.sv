@@ -18,7 +18,7 @@ module execute #(
                  .sign(sign_E),
                  .w_arith(w_arith),
                  .result(aluResult));
-    
+
     assign aluResult_E = w_arith ? 
                         {{32{aluResult[31]}}, aluResult[(N/2)-1:0]} :
                         aluResult;

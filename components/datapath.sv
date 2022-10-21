@@ -1,19 +1,23 @@
 // DATAPATH
 
 module datapath #(parameter N = 64)
-                    (input logic reset, clk,
-                    input logic [3:0] AluControl,
-                    input logic[2:0] Branch, memMask,
-                    input logic[1:0] regSel, memRead,
-                    input logic AluSrc,
-                    input logic memWrite,
-                    input logic regWrite,	
-                    input logic memtoReg,
-                    input logic w_arith,
-                    input logic [31:0] IM_readData,
-                    input logic [N-1:0] DM_readData,
-                    output logic [N-1:0] IM_addr, DM_addr, DM_writeData,
-                    output logic DM_writeEnable, DM_readEnable);
+                (input logic reset, clk,
+                 input logic [3:0] AluControl,
+                 input logic[2:0] Branch, memMask,
+                 input logic[1:0] regSel, memRead,
+                 input logic AluSrc,
+                 input logic memWrite,
+                 input logic regWrite,	
+                 input logic memtoReg,
+                 input logic wArith,
+                 input logic [31:0] IM_readData,
+                 input logic [N-1:0] DM_readData,
+                 input logic [N-1:0] PC_Trap,
+                 output logic [N-1:0] IM_addr, DM_addr, DM_writeData,
+                 output logic DM_writeEnable, DM_readEnable,
+                 output logic[3:0] exceptSignal_F, 
+                 output logic[6:0] exceptSignal_E, 
+                 output logic[1:0] breakSrc);
                     
     logic PCSrc;
     logic [N-1:0] PCBranch_E, PC_4, aluResult_E, writeData_E, writeData3; 
@@ -24,10 +28,16 @@ module datapath #(parameter N = 64)
     fetch #(64) FETCH(.PCSrc_F(PCSrc),
                       .clk(clk),
                       .reset(reset),
-                    //   .PC_4(PC_4),
+                      .PC_Trap(PC_Trap),
+                      .interruptSignal(1'b0),
                       .PCBranch_F(PCBranch_E),
                       .imem_addr_F(IM_addr));
     
+    except_F eC_F(.PC(IM_addr),
+                  .iAlign(1'b0),
+                  .exceptSignal(exceptSignal_F));
+
+
     decode #(64) DECODE(.regWrite_D(regWrite),
                         .clk(clk),
                         .Branch(Branch),
@@ -50,11 +60,15 @@ module datapath #(parameter N = 64)
                           .PCBranch_E(PCBranch_E), 
                           .aluResult_E(DM_addr), 
                           .writeData_E(writeData_E),
-                          .w_arith(w_arith),
+                          .wArith(wArith),
                           .zero_E(zero_E),
                           .overflow_E(overflow_E),
                           .sign_E(sign_E));
-                                                                   
+    
+    except_E eC_E (.DM_addr(DM_addr),
+                   .memOp(memWrite),
+                   .exceptSignal(exceptSignal_E));
+
     branching BRANCH(.Branch_W(Branch),
                    .zero_W(zero_E),
                    .sign_W(sign_E),
@@ -77,4 +91,5 @@ module datapath #(parameter N = 64)
                                .memtoReg(memtoReg), 
                                .writeData3_W(writeData3));
 
+    assign breakSrc = {exceptSignal_E[6], exceptSignal_F[3]};
 endmodule

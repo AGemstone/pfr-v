@@ -1,92 +1,138 @@
 module maindec (
     input logic[6:0] Op,
     input logic[2:0] funct3,
+    input logic[11:0] funct12,
+    input logic[1:0] priv, 
     output logic[1:0] regSel, MemRead,
-    output logic ALUSrc, MemtoReg, RegWrite, MemWrite, w_arith,
-    output logic[2:0] Branch, memMask,
+    output logic ALUSrc, MemtoReg, RegWrite, MemWrite, wArith,
+    output logic[2:0] Branch, memMask, exceptSignal,
     output logic[1:0] ALUOp
 );
-    logic [16:0] outputSignal; 
+    logic [19:0] outputSignal;
+    // logic [6:0] funct7;
+    // assign funct7 = funct12[11:5];
     always_comb
 	    if(Op == 7'b1100011) begin
             // beq 
             if(funct3 == 3'b000)
-                outputSignal = 'b0_00_000_00_0_000_001_01;
+                outputSignal <= 'b000_0_00_000_00_0_000_001_01;
             // bne
             else if(funct3 == 3'b001)
-                outputSignal = 'b0_00_000_00_0_000_011_01;
+                outputSignal <= 'b000_0_00_000_00_0_000_011_01;
             // blt
             else if(funct3 == 3'b100)
-                outputSignal = 'b0_00_000_00_0_000_101_01;
+                outputSignal <= 'b000_0_00_000_00_0_000_101_01;
             // bge
             else if(funct3 == 3'b101)
-                outputSignal = 'b0_00_000_00_0_000_100_01;
+                outputSignal <= 'b000_0_00_000_00_0_000_100_01;
             // bltu
             else if(funct3 == 3'b110)
-                outputSignal = 'b0_00_000_00_0_000_110_01;
+                outputSignal <= 'b000_0_00_000_00_0_000_110_01;
             // bgeu
             else if(funct3 == 3'b111)
-                outputSignal = 'b0_00_000_00_0_000_010_01;
+                outputSignal <= 'b000_0_00_000_00_0_000_010_01;
             else
-                outputSignal = 'b0_00_000_00_0_000_000_01;
+                outputSignal <= 'b000_0_00_000_00_0_000_000_01;
         end
         // R format
         else if(Op == 7'b0110011)
-            outputSignal = 'b0_00_001_00_0_000_000_10;
+            outputSignal <= 'b000_0_00_001_00_0_000_000_10;
         // R format (32bit)
         else if(Op == 7'b0111011)
-            outputSignal = 'b1_00_001_00_0_000_000_10;
+            outputSignal <= 'b000_1_00_001_00_0_000_000_10;
         // I format
         else if(Op == 7'b0010011)
-            outputSignal = 'b0_00_101_00_0_000_000_11;
+            outputSignal <= 'b000_0_00_101_00_0_000_000_11;
         // I format (32bit)
         else if(Op == 7'b0011011)
-            outputSignal = 'b1_00_101_00_0_000_000_11;
+            outputSignal <= 'b000_1_00_101_00_0_000_000_11;
         // loads
         else if(Op == 7'b0000011) begin
             if(funct3 == 3'b000)
-                outputSignal = 'b0_00_111_11_0_000_000_00;
+                outputSignal <= 'b000_0_00_111_11_0_000_000_00;
             else if (funct3 == 3'b100)
-                outputSignal = 'b0_00_111_01_0_000_000_00;
+                outputSignal <= 'b000_0_00_111_01_0_000_000_00;
             else if(funct3 == 3'b001) 
-                outputSignal = 'b0_00_111_11_0_001_000_00;
+                outputSignal <= 'b000_0_00_111_11_0_001_000_00;
             else if(funct3 == 3'b101)
-                outputSignal = 'b0_00_111_01_0_001_000_00;
+                outputSignal <= 'b000_0_00_111_01_0_001_000_00;
             else if(funct3 == 3'b010)
-                outputSignal = 'b0_00_111_11_0_011_000_00;
+                outputSignal <= 'b000_0_00_111_11_0_011_000_00;
             else if(funct3 == 3'b110)
-                outputSignal = 'b0_00_111_01_0_011_000_00;
+                outputSignal <= 'b000_0_00_111_01_0_011_000_00;
             else 
-                outputSignal = 'b0_00_111_11_0_111_000_00;
+                outputSignal <= 'b000_0_00_111_11_0_111_000_00;
         end
         // stores
         else if(Op == 7'b0100011) begin
             if(funct3 == 3'b000)
-                outputSignal = 'b0_00_100_00_1_000_000_00;
+                outputSignal <= 'b000_0_00_100_00_1_000_000_00;
             else if(funct3 == 3'b001)
-                outputSignal = 'b0_00_100_00_1_001_000_00;
+                outputSignal <= 'b000_0_00_100_00_1_001_000_00;
             else if(funct3 == 3'b010)
-                outputSignal = 'b0_00_100_00_1_011_000_00;
+                outputSignal <= 'b000_0_00_100_00_1_011_000_00;
             else 
-                outputSignal = 'b0_00_100_00_1_111_000_00;
+                outputSignal <= 'b000_0_00_100_00_1_111_000_00;
         end
 
         //LUI
         else if (Op == 'b0110111)  
-            outputSignal = 'b0_01_101_00_0_000_000_00;
+            outputSignal <= 'b000_0_01_101_00_0_000_000_00;
         
         //AUIPC
         else if (Op == 'b0010111)
-            outputSignal = 'b0_10_101_00_0_000_000_00;
+            outputSignal <= 'b000_0_10_101_00_0_000_000_00;
         
         //JAL or JALR
         else if (Op == 'b1101111 | Op == 'b1100111)   
-            outputSignal = 'b0_00_001_00_0_000_111_01;
+            outputSignal <= 'b000_0_00_001_00_0_000_111_01;
+        
+        // SYSTEM (ECALL or EBREAK)
+        else if (Op == 'b1101111) begin
+            // 00100073 // ebreak
+            if (funct3 == 3'b000) begin
+                if (funct12 == 'h001)
+                    outputSignal <= 'b001_00_00_000_00_0_000_000_00;
 
+                // 00000073 // ecall
+                else if (funct12 == 'h000)
+                    outputSignal <= 'b010_00_00_000_00_0_000_000_00;
+                    // 10500073 // wfi
+                    // 30200073 // mret
+                    // 10200073 // sret
+                    // same as illegal for now
+                else
+                outputSignal <= 'b100_00_00_000_00_0_000_000_00;
+            end
+            // csrrw
+            if (funct3 == 3'b001) begin
+            end
+            // csrrs
+            if (funct3 == 3'b010) begin
+            end
+            // csrrc
+            if (funct3 == 3'b011) begin
+            end
+            // csrrwi
+            if (funct3 == 3'b101) begin
+            end
+            // csrrsi
+            if (funct3 == 3'b110) begin
+            end
+            // csrrci
+            if (funct3 == 3'b111) begin
+            end
+            
+
+
+        end
+
+        // undefined / illegal instruction
         else 
-            outputSignal = 'b0;
+            outputSignal <= 'b100_00_00_000_00_0_000_000_00;
     
-    assign w_arith = outputSignal[16];
+    assign exceptSignal = outputSignal[19:17];
+    assign wArith = outputSignal[16];
     //00: normal, 01: immediate, zero, 10: immediate, PC, 11: PC + 4
     assign regSel       = outputSignal[15:14];
     assign ALUSrc       = outputSignal[13];
