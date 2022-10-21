@@ -9,6 +9,11 @@ module maindec (
     output logic[1:0] ALUOp
 );
     logic [19:0] outputSignal;
+
+    logic [2:0] subPriv_CSRAddr;
+    logic csrPrivCheck;
+    assign subPriv_CSRAddr = priv - funct12[9:8];
+    assign csrPrivCheck = ~subPriv[2];
     // logic [6:0] funct7;
     // assign funct7 = funct12[11:5];
     always_comb
@@ -104,27 +109,32 @@ module maindec (
                 else
                 outputSignal <= 'b100_00_00_000_00_0_000_000_00;
             end
+
             // csrrw
-            if (funct3 == 3'b001) begin
+            else if (funct3 == 3'b001) begin
+                outputSignal <= 'b100_00_00_000_00_0_000_000_00;
             end
             // csrrs
-            if (funct3 == 3'b010) begin
+            else if (funct3 == 3'b010) begin
+                outputSignal <= 'b100_00_00_000_00_0_000_000_00;
             end
             // csrrc
-            if (funct3 == 3'b011) begin
+            else if (funct3 == 3'b011) begin
+                outputSignal <= 'b100_00_00_000_00_0_000_000_00;
             end
             // csrrwi
-            if (funct3 == 3'b101) begin
+            else if (funct3 == 3'b101) begin
+                outputSignal <= 'b100_00_00_000_00_0_000_000_00;
             end
             // csrrsi
-            if (funct3 == 3'b110) begin
+            else if (funct3 == 3'b110) begin
+                outputSignal <= 'b100_00_00_000_00_0_000_000_00;
             end
             // csrrci
-            if (funct3 == 3'b111) begin
+            else if (funct3 == 3'b111) begin
+                outputSignal <= 'b100_00_00_000_00_0_000_000_00;
             end
             
-
-
         end
 
         // undefined / illegal instruction
@@ -132,6 +142,7 @@ module maindec (
             outputSignal <= 'b100_00_00_000_00_0_000_000_00;
     
     assign exceptSignal = outputSignal[19:17];
+    assign
     assign wArith = outputSignal[16];
     //00: normal, 01: immediate, zero, 10: immediate, PC, 11: PC + 4
     assign regSel       = outputSignal[15:14];
