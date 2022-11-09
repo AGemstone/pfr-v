@@ -1,15 +1,20 @@
 module except_controller #(parameter N = 64) 
-                         (input logic[N-1:0] PC_F,
-                          input logic MIE, async, clk, reset,
+                         (input logic MIE, async, clk, reset,
                           input logic[2:0] breakSrc,
                           input logic[15:0] exceptSignal,
                           input logic[15:0] interruptSignal,
-                          input logic[1:0] privMode,
-                          output logic[1:0] nextPriv,
-                          output logic mIEToggle,
-                          output logic[N-1:0] PC_Trap);
+                          input logic[N-1:0] PC_F,
+                          input logic[N-1:0] CSR_In,
+                          input logic[11:0] CSR_addr,
+                          input logic CSR_WriteEnable,
+                          output logic[15:0] trapTrigger,
+                          output logic[N-1:0] mcause,
+                          output logic[N-1:0] mtvec,
+                          output logic[N-1:0] mepc);
     
-    // CSR signals should output into decode stage
+    // CSR mask
+    localparam logic[N-1:0] mie_mask = {{52'b0}, {4'b1000}, {4'b1000}, {4'b1000}};
+    localparam logic[N-1:0] mtvec_mask = {{40'b0}, {22'h3fffff}, {2'b0}};
 
     logic[5:0] exceptCode, interruptCode;
     logic [N-1:0] mcauseCode;
@@ -23,39 +28,43 @@ module except_controller #(parameter N = 64)
     interruptDecode iCode(.signal(interruptSignal),
                           .code(interruptCode));
 
-    // read only for now
-    logic[N-1:0] mtvecOut;
-    logic[N-1:0] mcause;
-    logic[N-1:0] mepc;
+    // Internal CSR signals
     logic exceptCSREnable;
-    
+    logic[N-1:0] mtvecOut;
+
     flopre #(64) mcause_csr (.clk(clk),  
                              .reset(reset), 
                              .enable(exceptCSREnable),
                              .d(mcauseCode),
-                             .q(mcause_csr));
+                             .q(mcause));
+
+    // when pipelining source should depend on where the signal is coming from
+    // earlier in pipeline has more priority
+    /*
+        if exceptSignal from fetch
+            mepcIn = PC_f
+        else if exceptSignal from decode
+            mepcIn = PC_f
+        ...
+    */
 
     flopre #(64) mepc_csr (.clk(clk),  
-                           .reset(reset), 
-                           .enable(exceptCSREnable),
-                           .d(PC_F),
-                           .q(mepc));
-
-    // in the future we want to be able to change the mode and address
-    // flopre_init #(64,{N{1'b0}}) mtvec (
-    // .clk(clk), 
-    // .reset(reset),
-    // .enable(),
-    // .d(), 
-    // .q(PC_Trap));
+                          .reset(reset),
+                          .enable(exceptCSREnable),
+                          .d(PC_F),
+                          .q(mepc));
+    
+    flopre #(64) mtvec_csr (.clk(clk), 
+                            .reset(reset),
+                            .enable((CSR_addr == 'h305) && CSR_WriteEnable),
+                            .d((mtvec & ~mtvec_mask) | (CSR_In & mtvec_mask)),
+                            .q(mtvec));
 
     assign exceptCSREnable = MIE & (|{exceptSignal});
-    // no async interrupts for now :(
-    assign mtvecOut = 'h0000000000001000;
-    assign PC_Trap = {{mtvecOut[N-1:2]}, {2'b0}};
+    // no async interrupts for now 
     assign mcauseCode[5:0] = async ? interruptCode : exceptCode;
     assign mcauseCode[N-2:6] = 'b0;
     assign mcauseCode[N-1] = async;
-
+    assign trapTrigger = {16{MIE}} & exceptSignal;
 
 endmodule

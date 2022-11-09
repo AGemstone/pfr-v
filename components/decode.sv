@@ -1,12 +1,13 @@
 // Etapa: DECODE
 
-module decode #(parameter N = 64)
+module decode #(parameter N = 64, W_CSR = 8)
                     (input logic regWrite_D, clk,
                     input logic[2:0] Branch,
                     input logic regSel0,
                     input logic[N-1:0] writeData3_D, PC_4,
                     input logic[31:0] instr_D,
-                    output logic[N-1:0] signImm_D,
+                    input logic[N-1:0] csrOut[0:W_CSR-1],
+                    output logic[N-1:0] signImm_D, csrRead_D,
                     output logic[N-1:0] readData1_D, readData2_D);
     
 
@@ -25,9 +26,12 @@ module decode #(parameter N = 64)
 
     signext ext(.a(instr_D), 
                 .y(signImm_D));
+    
+    csr_dec #(N, W_CSR, 0) csrD (.addr(instr_D[31:20]),
+                                 .csr_out(csrOut),
+                                 .csr_read(csrRead_D));
 
     // Early write of return address
     assign writeData3 = (&{Branch[2:0]}) ? PC_4 : writeData3_D;
     assign rs1 = regSel0 ? 5'b0: instr_D[19:15];
-
 endmodule

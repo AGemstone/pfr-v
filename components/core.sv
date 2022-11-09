@@ -1,66 +1,60 @@
-// PIPELINED PROCESSOR
-
 module core #(parameter N = 64)
-                            (input logic CLOCK_50, reset,
-                            input logic[N-1:0] DM_readData,
-                            output logic [N-1:0] DM_writeData, DM_addr,
-                            output logic DM_writeEnable, DM_readEnable,
-                            input logic dump);
-                            
-    logic[31:0] q;		
+            (input logic clk, reset,
+            input logic[N-1:0] DM_readData,
+            output logic [N-1:0] DM_writeData, DM_addr,
+            output logic DM_writeEnable, DM_readEnable,
+            input logic dump);
+
+    logic[1:0] privMode;
+
+    // Controller signals
     logic[3:0] AluControl;
-    logic regWrite, memtoReg, memWrite, AluSrc, wArith;
+    logic regWrite, memtoReg, memWrite, AluSrc, wArith, aluSelect;
     logic[1:0] regSel, memRead;
     logic[2:0] Branch, memMask;
+    logic[2:0] breakSrc;
+    logic trapReturn;
+    
+    // Memory signals
+    logic[31:0] instrMemData;
     logic[N-1:0] readData, IM_address;
-    logic[N-1:0] PC_Trap;
+    
+    // Exception signals 
     logic[3:0] exceptSignal_F;
     logic[2:0] exceptSignal_D;
     logic[6:0] exceptSignal_E;
     logic[15:0] exceptSignal;
     logic[15:0] interruptSignal;
-    logic[N-1:0] mip, mie;
-    logic[2:0] breakSrc;
-    logic[16:0] instr;
-    logic [N-1:0] mstatusIn, mstatusOut;
-    logic mIEToggle;
+    logic[15:0] trapTrigger;
 
-    // Not yet implemented
-    flopre_init #(64) mstatus_csr(.clk(CLOCK_50),
-                                  .reset(reset),
-                                  .d({{(N-4){1'b0}}, 
-                                      ~mstatus[3],
-                                      {3'b0}}),
-                                  .enable(1'b0),
-                                  .q(mstatus));
+    // CSR signals
+    localparam W_CSR = 5;
+    logic[N-1:0] csrOut[0:W_CSR-1];
+    logic[N-1:0] csrIn;
+    logic[11:0] CSR_addr;
+    logic csrWriteEnable;
+    logic CSR_WriteEnable;
 
-    flopre_init #(64) mstatus_csr(.clk(CLOCK_50),
-                                  .reset(reset),
-                                  .d({{(N-4){1'b0}}, 
-                                      ~mstatus[3],
-                                      {3'b0}}),
-                                  .enable(1'b0),
-                                  .q(mstatus));                            
+    // CSR
+    flopre #(N) mscratch_csr(.clk(clk),
+                             .reset(reset),
+                             .d(csrIn),
+                             .enable((CSR_addr == 'h340) && CSR_WriteEnable),
+                             .q(csrOut[0])); 
 
-    // no interrupt support for now
-    // order of except signal is according to except code
-    // reserved signals are grounded
-    except_controller eC(.privMode(2'b00),
-                         .nextPriv(2'b00),
-                         .exceptSignal(exceptSignal),
-                         .interruptSignal(interruptSignal),
-                         .PC_F(IM_address),
-                         .breakSrc(breakSrc),
-                         .PC_Trap(PC_Trap),
-                         .MIE(mstatus[3]),
-                         .async(1'b0),
-                         .mIEToggle(mIEToggle),
-                         .clk(CLOCK_50),
-                         .reset(reset));
-
-    controller c(.funct12(q[31:20]),
-                 .funct3(q[14:12]), 
-                 .instr(q[6:0]),
+    core_status status(.trapTrigger(trapTrigger),
+                       .trapReturn(trapReturn),
+                       .mstatusCSREnable((CSR_addr == 'h300) && CSR_WriteEnable),
+                       .clk(clk),
+                       .reset(reset),
+                       .csrIn(csrIn),
+                       .currentMode(privMode),
+                       .mstatus(csrOut[1]));
+    
+    // Processing
+    controller c(.funct12(instrMemData[31:20]),
+                 .funct3(instrMemData[14:12]), 
+                 .instr(instrMemData[6:0]),
                  .AluControl(AluControl), 
                  .regWrite(regWrite), 
                  .AluSrc(AluSrc), 
@@ -70,40 +64,49 @@ module core #(parameter N = 64)
                  .memMask(memMask),
                  .memtoReg(memtoReg), 
                  .memRead(memRead),
+                 .aluSelect(aluSelect),
                  .breakSrc(breakSrc[2]),
+                 .trapReturn(trapReturn),
+                 .csrWriteEnable(csrWriteEnable),
                  .exceptSignal_D(exceptSignal_D),
-                 .memWrite(memWrite));                    
+                 .memWrite(memWrite),
+                 .privMode(privMode));                    
                     
-    datapath #(64) dp(.reset(reset), 
-                      .clk(CLOCK_50), 
-                      .AluSrc(AluSrc), 
-                      .regSel(regSel),
-                      .AluControl(AluControl), 
-                      .Branch(Branch), 
-                      .wArith(wArith),
-                      .memMask(memMask),
-                      .memRead(memRead),
-                      .memWrite(memWrite), 
-                      .regWrite(regWrite), 
-                      .memtoReg(memtoReg),
-                      .IM_readData(q), 
-                      .DM_readData(readData), 
-                      .IM_addr(IM_address), 
-                      .DM_addr(DM_addr), 
-                      .DM_writeData(DM_writeData), 
-                      .DM_writeEnable(DM_writeEnable), 
-                      .DM_readEnable(DM_readEnable),
-                      .exceptSignal_F(exceptSignal_F),
-                      .exceptSignal_E(exceptSignal_E),
-                      .PC_Trap(PC_Trap),
-                      .breakSrc(breakSrc[1:0])
-                    //   .PC_F(PC),
-                      );				
+    datapath #(N, W_CSR) dp(.reset(reset), 
+                            .clk(clk), 
+                            .AluSrc(AluSrc), 
+                            .regSel(regSel),
+                            .aluSelect(aluSelect),
+                            .AluControl(AluControl), 
+                            .Branch(Branch), 
+                            .wArith(wArith),
+                            .memMask(memMask),
+                            .memRead(memRead),
+                            .memWrite(memWrite), 
+                            .regWrite(regWrite), 
+                            .memtoReg(memtoReg),
+                            .trapReturn(trapReturn),
+                            .trapTrigger({|trapTrigger}),
+                            .IM_readData(instrMemData), 
+                            .DM_readData(readData), 
+                            .IM_addr(IM_address), 
+                            .DM_addr(DM_addr), 
+                            .DM_writeData(DM_writeData), 
+                            .DM_writeEnable(DM_writeEnable), 
+                            .DM_readEnable(DM_readEnable),
+                            .exceptSignal_F(exceptSignal_F),
+                            .exceptSignal_E(exceptSignal_E),
+                            .breakSrc(breakSrc[1:0]),
+                            .csrIn(csrIn),
+                            .csrOut(csrOut),
+                            .CSR_addr(CSR_addr),
+                            .csrWriteEnable(csrWriteEnable),
+                            .CSR_WriteEnable(CSR_WriteEnable));
                       
     imem instrMem (.addr(IM_address[7:2]),
-                   .q(q));
+                   .q(instrMemData));
                                     
-    // dmem dataMem(.clk(CLOCK_50), 
+    // dmem dataMem(.clk(clk), 
     //              .memWrite(DM_writeEnable), 
     //              .memRead(DM_readEnable), 
     //              .address(DM_addr[9:3]), 
@@ -112,35 +115,46 @@ module core #(parameter N = 64)
     //              .dump(dump));
     // assign DM_readData = readData;
 
-    dmemip dataMem(.clock(CLOCK_50),
-	                 .data(DM_writeData),
-	                 .address(DM_addr[12:3]),
-	                 .rden(DM_readEnable),
-	                 .wren(DM_writeEnable),
-	                 .q(readData));
+    dmemip dataMem(.clock(clk),
+                   .data(DM_writeData),
+                   .address(DM_addr[12:3]),
+                   .rden(DM_readEnable),
+                   .wren(DM_writeEnable),
+                   .q(readData));
   
-  assign exceptSignal = {exceptSignal_E[5],
-                        {1'b0},
-                        exceptSignal_E[4],
-                        exceptSignal_F[2],
-                        exceptSignal_D[1],
-                        {1'b0}, 
-                        exceptSignal_D[1], 
-                        exceptSignal_D[1], 
-                        exceptSignal_E[3:0],
-                        {(exceptSignal_E[5] | exceptSignal_D[0] | except_F[2])},
-                        exceptSignal_D[2], 
-                        exceptSignal_F[1:0]};
+    // Exceptions
+    // no interrupt support for now
+    // order of except signal is according to except code
+    // reserved signals are grounded
+    except_controller eC(.clk(clk),
+                         .reset(reset),
+                         .async(1'b0),
+                         .MIE(csrOut[1][3]),
+                         .exceptSignal(exceptSignal),
+                         .interruptSignal(interruptSignal),
+                         .breakSrc(breakSrc),
+                         .PC_F(IM_address),
+                         .CSR_WriteEnable(CSR_WriteEnable),
+                         .CSR_addr(CSR_addr),
+                         .CSR_In(csrIn),
+                         .trapTrigger(trapTrigger),
+                         .mcause(csrOut[2]),
+                         .mtvec(csrOut[3]),
+                         .mepc(csrOut[4]));
+
+    assign exceptSignal = {exceptSignal_E[5],
+                          {1'b0},
+                          exceptSignal_E[4],
+                          exceptSignal_F[2],
+                          exceptSignal_D[1],
+                          {1'b0}, 
+                          exceptSignal_D[1], 
+                          exceptSignal_D[1], 
+                          exceptSignal_E[3:0],
+                          {(exceptSignal_E[5] | exceptSignal_D[0] | exceptSignal_F[2])},
+                          exceptSignal_D[2], 
+                          exceptSignal_F[1:0]};
+
   assign interruptSignal = 'b0;
-	assign mstatusIn = {{42'b0}, 
-                      {1'b0}, 
-                      {3'b0}, 
-                      mprv, 
-                      {4'b0}, 
-                      mpp, 
-                      {3'b0}, 
-                      mpie,
-                      {3'b0},
-                      mie, 
-                      {4'b0}};
+
 endmodule

@@ -19,6 +19,13 @@ module regfile #(parameter BANK_WIDTH = 5, WIDTH = 64)
         // end
     end
 
+    //negedge reads
+    // always @(negedge clk) begin
+    //     rd1 <= ram[ra1];
+    //     rd2 <= ram[ra2];
+    // end
+    
+    //async read
     assign rd1 = ram[ra1];
     assign rd2 = ram[ra2];
 

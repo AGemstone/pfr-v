@@ -1,6 +1,6 @@
 module alu #(parameter N=64) 
             (input logic[N-1:0] a, b,
-            input logic w_arith,
+            input logic wArith,
             input logic[3:0] ALUControl,
             output logic zero, overflow, sign,
             output logic[N-1:0] result);
@@ -38,21 +38,21 @@ module alu #(parameter N=64)
         end
 
         4'b0011 : begin 
-            if (w_arith)
+            if (wArith)
                 result = a >> b[4:0];
             else
                 result = a >> b[5:0];
             overflow = 0; 
         end
         4'b1011 : begin 
-            if (w_arith)
+            if (wArith)
                 result = $signed(a) >>> b[4:0];
             else
                 result = $signed(a) >>> b[5:0];
             overflow = 0; 
         end
         4'b0111 : begin 
-            if (w_arith)
+            if (wArith)
                 result = a << b[4:0];
             else
                 result = a << b[5:0];
