@@ -51,7 +51,7 @@ module except_controller #(parameter N = 64)
     flopre #(64) mepc_csr (.clk(clk),  
                           .reset(reset),
                           .enable(exceptCSREnable),
-                          .d(PC_F),
+                          .d(PC_F + 64'h4),
                           .q(mepc));
     
     flopre #(64) mtvec_csr (.clk(clk), 
