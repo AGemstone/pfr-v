@@ -4,13 +4,15 @@ module decode #(parameter N = 64, W_CSR = 8)
                     (input logic regWrite_D, clk,
                     input logic[2:0] Branch,
                     input logic regSel0,
+                    input logic weDB_D,
+                    input logic[4:0] readRegDB_D, writeRegDB_D,
+                    input logic[N-1:0] writeDataDB_D,
                     input logic[N-1:0] writeData3_D, PC_4,
                     input logic[31:0] instr_D,
                     input logic[N-1:0] csrOut[0:W_CSR-1],
                     output logic[N-1:0] signImm_D, csrRead_D,
-                    output logic[N-1:0] readData1_D, readData2_D);
-    
-
+                    output logic[N-1:0] readData1_D, readData2_D,
+                    output logic[N-1:0] readDataDB_D);
     
     logic[4:0] rs1;
     logic[N-1:0] writeData3;

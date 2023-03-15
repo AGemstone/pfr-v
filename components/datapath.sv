@@ -59,7 +59,12 @@ module datapath #(parameter N = 64, W_CSR = 256)
                               .csrOut(csrOut),
                               .csrRead_D(csrRead_D),
                               .readData1_D(readData1_D),
-                              .readData2_D(readData2_D));	
+                              .readData2_D(readData2_D),
+                              .readDataDB_D(),
+                              .writeDataDB_D(),
+                              .readRegDB_D(),
+                              .writeRegDB_D(),
+                              .weDB_D());
                                        
     execute #(N) EXECUTE(.AluSrc(AluSrc),
                          .AluControl(AluControl),

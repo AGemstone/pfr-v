@@ -8,10 +8,14 @@ module regfile_tb();
 	logic [63:0] rd1;
 	logic [63:0] rd2;
 
-    regfile dut(ra1, ra2, wa3, we3, clk, wd3, rd1, rd2);
+    logic [63:0] rd_db, wd_db;
+    logic [4:0] wa_db, ra_db;
+    logic we_db;
+
+    regfile dut(ra1, ra2, ra_db, wa3, wa_db, wd3, wd_db, we3, clk, we_db, rd1, rd2, rd_db);
 
     initial begin
-        for (int i = 0; i < 32; i=i+1) 
+        for (int i = 0; i < 32; i = i + 1) 
         begin
             clk = 0; #5;
             ra1 = i;
