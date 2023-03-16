@@ -1,7 +1,8 @@
 module regfile #(parameter BANK_WIDTH = 5, WIDTH = 64) 
-                (input logic[BANK_WIDTH-1: 0] ra1, ra2, ra_db, wa3, wa_db,
-                 input logic[WIDTH-1: 0] wd3, wd_db,
-                 input logic we3, clk, we_db,
+                (input logic[BANK_WIDTH-1: 0] ra1, ra2, wa3,
+                 input logic[BANK_WIDTH-1: 0] ra_db,
+                 input logic[WIDTH-1: 0] wd3,
+                 input logic we3, clk,
                  output logic[WIDTH-1: 0] rd1, rd2, rd_db);
 
     localparam int WORDS = 1 << BANK_WIDTH ;
@@ -11,14 +12,9 @@ module regfile #(parameter BANK_WIDTH = 5, WIDTH = 64)
         'd0, 'd0, 'd0, 'd0, 'd0, 'd0, 'd0
     };
     always_ff@(posedge clk) begin
-        if (|{wa3[BANK_WIDTH-1:0]}) begin 
-            if (we_db) begin
-                ram[we_db] <= wd_db;
-            end
-            else if (we3) begin
+            if (we3 & |{wa3[BANK_WIDTH-1:0]}) begin
                 ram[wa3] <= wd3;
             end
-        end
     end
 
     //negedge reads

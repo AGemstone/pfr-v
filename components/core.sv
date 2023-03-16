@@ -3,7 +3,11 @@ module core #(parameter N = 64)
             input logic[N-1:0] DM_readData,
             output logic [N-1:0] DM_writeData, DM_addr,
             output logic DM_writeEnable, DM_readEnable,
-            input logic dump);
+            input logic dump,
+            input logic [14:0] coprocessorIOAddr,
+            input logic [2:0] coprocessorIOControl,
+            input logic [N-1:0] coprocessorIODataOut,
+            output logic [N-1:0] coprocessorIODataIn);
 
     logic[1:0] privMode;
 
@@ -101,7 +105,12 @@ module core #(parameter N = 64)
                             .csrOut(csrOut),
                             .CSR_addr(CSR_addr),
                             .csrWriteEnable(csrWriteEnable),
-                            .CSR_WriteEnable(CSR_WriteEnable));
+                            .CSR_WriteEnable(CSR_WriteEnable),
+                            .coprocessorIOAddr(coprocessorIOAddr),
+                            .coprocessorIOControl(coprocessorIOControl),
+                            .coprocessorIODataOut(coprocessorIODataOut),
+                            .coprocessorIODataIn(coprocessorIODataIn)
+                            );
                       
     imem instrMem (.addr(IM_address[7:2]),
                    .q(instrMemData));

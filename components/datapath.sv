@@ -17,6 +17,10 @@ module datapath #(parameter N = 64, W_CSR = 256)
                  input logic [31:0] IM_readData,
                  input logic [N-1:0] DM_readData,
                  input logic[N-1:0] csrOut[0:W_CSR-1],
+                 input logic [14:0] coprocessorIOAddr,
+                 input logic [2:0] coprocessorIOControl,
+                 input logic [N-1:0] coprocessorIODataOut,
+                 output logic [N-1:0] coprocessorIODataIn,
                  output logic[N-1:0] csrIn,
                  output logic [N-1:0] IM_addr, DM_addr, DM_writeData,
                  output logic [11:0] CSR_addr,
@@ -60,11 +64,11 @@ module datapath #(parameter N = 64, W_CSR = 256)
                               .csrRead_D(csrRead_D),
                               .readData1_D(readData1_D),
                               .readData2_D(readData2_D),
-                              .readDataDB_D(),
-                              .writeDataDB_D(),
-                              .readRegDB_D(),
-                              .writeRegDB_D(),
-                              .weDB_D());
+                              .readDataDB_D(coprocessorIODataIn),
+                              .writeDataDB_D(coprocessorIODataOut),
+                              .readRegDB_D (coprocessorIOAddr[4:0]),
+                              .writeRegDB_D(coprocessorIOAddr[4:0]),
+                              .weDB_D(coprocessorIOControl[0]));
                                        
     execute #(N) EXECUTE(.AluSrc(AluSrc),
                          .AluControl(AluControl),

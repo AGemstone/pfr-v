@@ -18,13 +18,15 @@ module decode #(parameter N = 64, W_CSR = 8)
     logic[N-1:0] writeData3;
     
     regfile	registers(.clk(clk), 
-                      .we3(regWrite_D), 
-                      .wa3(instr_D[11:7]), 
+                      .we3(regWrite_D | weDB_D), 
+                      .wa3(weDB_D ? writeRegDB_D : instr_D[11:7]), 
                       .ra1(rs1), 
                       .ra2(instr_D[24:20]), 
-                      .wd3(writeData3), 
+                      .wd3(weDB_D ? writeDataDB_D : writeData3), 
                       .rd1(readData1_D), 
-                      .rd2(readData2_D));
+                      .rd2(readData2_D),
+                      .ra_db(readRegDB_D),
+                      .rd_db(readDataDB_D));
 
     signext ext(.a(instr_D), 
                 .y(signImm_D));
