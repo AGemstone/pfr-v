@@ -3,16 +3,63 @@ module imem #(parameter N = 32)(
     output logic[N-1:0] q
 );
     logic [N - 1:0] rom [0 : 63];
-    localparam int prog_leng = 7;
-    assign rom[0:prog_leng-1] = '{
-        'h0ff00593, //   0: li a1,255
-        'h00000533, //   4: add a0,zero,zero
-        'h00150513, //   8: addi a0,a0,1
-        'h00050513, //   c: mv a0,a0
-        'h00a03023, //  10: sd a0,0(zero) # 0 <setup>
-        'hfeb51ae3, //  14: bne a0,a1,8 <loop>
-        'hfe0006e3  //  18: beqz zero,4 <start>
+    assign rom[0:54] = '{
+        'h00003023, //   0: sd zero,0(zero) # 0 <start>
+        'h00000f93, //   4: li t6,0
+        'h40000113, //   8: li sp,1024
+        'h0940006f, //   c: j a0 <kmain>
+        'hfd010113, //  10: addi sp,sp,-48
+        'h02813423, //  14: sd s0,40(sp)
+        'h00000013, //  18: nop
+        'h03010413, //  1c: addi s0,sp,48
+        'hfca43c23, //  20: sd a0,-40(s0)
+        'h00000013, //  24: nop
+        'hfe043423, //  28: sd zero,-24(s0)
+        'h00000013, //  2c: nop
+        'h00100793, //  30: li a5,1
+        'hfef43023, //  34: sd a5,-32(s0)
+        'h00000013, //  38: nop
+        'h0340006f, //  3c: j 70 <sum+0x60>
+        'hfe843703, //  40: ld a4,-24(s0)
+        'hfe843703, //  44: ld a4,-24(s0)
+        'hfe043783, //  48: ld a5,-32(s0)
+        'hfe043783, //  4c: ld a5,-32(s0)
+        'h00f707b3, //  50: add a5,a4,a5
+        'hfef43423, //  54: sd a5,-24(s0)
+        'h00000013, //  58: nop
+        'hfe043783, //  5c: ld a5,-32(s0)
+        'hfe043783, //  60: ld a5,-32(s0)
+        'h00178793, //  64: addi a5,a5,1
+        'hfef43023, //  68: sd a5,-32(s0)
+        'h00000013, //  6c: nop
+        'hfe043703, //  70: ld a4,-32(s0)
+        'hfe043703, //  74: ld a4,-32(s0)
+        'hfd843783, //  78: ld a5,-40(s0)
+        'hfd843783, //  7c: ld a5,-40(s0)
+        'hfcf760e3, //  80: bltu a4,a5,40 <sum+0x30>
+        'hfe843783, //  84: ld a5,-24(s0)
+        'hfe843783, //  88: ld a5,-24(s0)
+        'h00078513, //  8c: mv a0,a5
+        'h02813403, //  90: ld s0,40(sp)
+        'h02813403, //  94: ld s0,40(sp)
+        'h03010113, //  98: addi sp,sp,48
+        'h00008067, //  9c: ret
+        'hfe010113, //  a0: addi sp,sp,-32
+        'h00113c23, //  a4: sd ra,24(sp)
+        'h00000013, //  a8: nop
+        'h00813823, //  ac: sd s0,16(sp)
+        'h00000013, //  b0: nop
+        'h02010413, //  b4: addi s0,sp,32
+        'h00bee7b7, //  b8: lui a5,0xbee
+        'head78513, //  bc: addi a0,a5,-339 # bedead <kmain+0xbede0d>
+        'hf51ff0ef, //  c0: jal ra,10 <sum>
+        'hfea43423, //  c4: sd a0,-24(s0)
+        'h00000013, //  c8: nop
+        'h00100f93, //  cc: li t6,1
+        'h01f03023, //  d0: sd t6,0(zero) # 0 <start>
+        'h00000013, //  d4: nop
+        'hffdff06f  //  d8: j d4 <kmain+0x34>
     };
-    assign rom [prog_leng:63] = '{(64-prog_leng){'0}};
+    assign rom [55:63] = '{(64-55){'0}};
     assign q = rom[addr];
 endmodule

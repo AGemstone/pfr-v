@@ -18,7 +18,7 @@ module datapath #(parameter N = 64, W_CSR = 256)
                  input logic [N-1:0] DM_readData,
                  input logic[N-1:0] csrOut[0:W_CSR-1],
                  input logic [14:0] coprocessorIOAddr,
-                 input logic [2:0] coprocessorIOControl,
+                 input logic [3:0] coprocessorIOControl,
                  input logic [N-1:0] coprocessorIODataOut,
                  output logic [N-1:0] coprocessorIODataIn,
                  output logic[N-1:0] csrIn,
@@ -36,6 +36,13 @@ module datapath #(parameter N = 64, W_CSR = 256)
     logic [N-1:0] Mask_readData, Mask_writeData;
     logic zero_E, overflow_E, sign_E;
     logic [N-1:0] csrRead_D, aluResultAtom0_E, aluResultAtom1_E;
+    logic PC_enable;
+
+    memoryStall memStall(.clk(clk),
+                         .reset(reset),
+                         .memOp(|{memRead}),
+                         .dataReadDM(Mask_readData),
+                         .PC_enable(PC_enable));
 
     fetch #(N) FETCH(.PCSrc_F(PCSrc),
                      .clk(clk),
@@ -45,6 +52,7 @@ module datapath #(parameter N = 64, W_CSR = 256)
                      .trapReturn(trapReturn),
                      .interruptSignal(trapTrigger),
                      .PCBranch_F(PCBranch_E),
+                     .PC_enable(~(|{coprocessorIOControl})),
                      .imem_addr_F(IM_addr));
     
     except_F eC_F(.PC(IM_addr),
@@ -68,7 +76,9 @@ module datapath #(parameter N = 64, W_CSR = 256)
                               .writeDataDB_D(coprocessorIODataOut),
                               .readRegDB_D (coprocessorIOAddr[4:0]),
                               .writeRegDB_D(coprocessorIOAddr[4:0]),
-                              .weDB_D(coprocessorIOControl[0]));
+                              .weDB_D(coprocessorIOControl[0]),
+                              .csrAddrDB_D(coprocessorIOAddr[11:0]),
+                              .csrDB_D(coprocessorIOControl[3]));
                                        
     execute #(N) EXECUTE(.AluSrc(AluSrc),
                          .AluControl(AluControl),

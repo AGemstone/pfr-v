@@ -57,18 +57,25 @@ module maindec (
 
         // loads
         else if (Op == 7'b0000011) begin
+            // lb
             if (funct3 == 3'b000)
                 outputSignal = 'b000_000_0_00_111_11_0_000_000_00;
+            // lbu
             else if (funct3 == 3'b100)
                 outputSignal = 'b000_000_0_00_111_01_0_000_000_00;
+            // lh
             else if(funct3 == 3'b001) 
                 outputSignal = 'b000_000_0_00_111_11_0_001_000_00;
+            // lhu
             else if(funct3 == 3'b101)
                 outputSignal = 'b000_000_0_00_111_01_0_001_000_00;
+            // lw
             else if(funct3 == 3'b010)
                 outputSignal = 'b000_000_0_00_111_11_0_011_000_00;
+            // lwu
             else if(funct3 == 3'b110)
                 outputSignal = 'b000_000_0_00_111_01_0_011_000_00;
+            // ld
             else 
                 outputSignal = 'b000_000_0_00_111_11_0_111_000_00;
         end
@@ -84,18 +91,20 @@ module maindec (
                 outputSignal = 'b000_000_0_00_100_00_1_111_000_00;
         end
 
-        //LUI
+        // LUI
         else if (Op == 'b0110111)  
             outputSignal = 'b000_000_0_01_101_00_0_000_000_00;
         
-        //AUIPC
+        // AUIPC
         else if (Op == 'b0010111)
             outputSignal = 'b000_000_0_10_101_00_0_000_000_00;
         
-        //JAL or JALR
-        else if (Op == 'b1101111 | Op == 'b1100111)   
+        // JAL
+        else if (Op == 'b1101111)   
             outputSignal = 'b000_000_0_00_001_00_0_000_111_01;
-        
+        // JALR
+        else if (Op == 'b1100111)
+            outputSignal = 'b000_000_0_00_101_00_0_000_111_01;
         // SYSTEM
         else if (Op == 'b1110011) begin
             if (funct3 == 3'b000) begin
@@ -119,12 +128,12 @@ module maindec (
             else if ((funct3 == 3'b001) |
                      (funct3 == 3'b010) |
                      (funct3 == 3'b011))
-                outputSignal = 'b011_000_0_00_010_00_0_000_000_10;
+                outputSignal = 'b011_000_0_00_001_00_0_000_000_10;
             // csrrxi
             else if ((funct3 == 3'b101) | 
                      (funct3 == 3'b110) | 
                      (funct3 == 3'b111)) 
-                outputSignal = 'b011_000_0_00_110_00_0_000_000_10;
+                outputSignal = 'b011_000_0_00_101_00_0_000_000_10;
             else 
                 outputSignal = 'b000_100_0_00_000_00_0_000_000_00;
         end
@@ -137,7 +146,6 @@ module maindec (
     assign aluSelect = outputSignal[21];
     assign csrWriteEnable = outputSignal[20];
     assign exceptSignal = outputSignal[19:17];
-    // assign
     assign wArith = outputSignal[16];
     //00: normal, 01: immediate, zero, 10: immediate, PC, 11: PC + 4
     assign regSel       = outputSignal[15:14];
@@ -158,3 +166,15 @@ module maindec (
     assign ALUOp        = outputSignal[1:0];
     
 endmodule
+/*
+00_
+1 alusrc
+1 memtoreg
+1 regwr
+11 memread
+0 memwrite
+0 mask
+no branch
+alu 0
+_11_0_111_000_00
+*/

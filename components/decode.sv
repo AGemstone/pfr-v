@@ -4,7 +4,8 @@ module decode #(parameter N = 64, W_CSR = 8)
                     (input logic regWrite_D, clk,
                     input logic[2:0] Branch,
                     input logic regSel0,
-                    input logic weDB_D,
+                    input logic weDB_D, csrDB_D,
+                    input logic[11:0] csrAddrDB_D,
                     input logic[4:0] readRegDB_D, writeRegDB_D,
                     input logic[N-1:0] writeDataDB_D,
                     input logic[N-1:0] writeData3_D, PC_4,
@@ -16,6 +17,9 @@ module decode #(parameter N = 64, W_CSR = 8)
     
     logic[4:0] rs1;
     logic[N-1:0] writeData3;
+    logic[N-1:0] signImm;
+    logic[N-1:0] jalrAddr;
+    logic[N-1:0] readRegDataDB, readCSRDataDB, csrReadMux;
     
     regfile	registers(.clk(clk), 
                       .we3(regWrite_D | weDB_D), 
@@ -26,16 +30,23 @@ module decode #(parameter N = 64, W_CSR = 8)
                       .rd1(readData1_D), 
                       .rd2(readData2_D),
                       .ra_db(readRegDB_D),
-                      .rd_db(readDataDB_D));
+                      .rd_db(readRegDataDB));
 
     signext ext(.a(instr_D), 
-                .y(signImm_D));
+                .y(signImm));
     
-    csr_dec #(N, W_CSR, 0) csrD (.addr(instr_D[31:20]),
+    // Coprocessor can only read for now since it requires further changes
+    csr_dec #(N, W_CSR, 0) csrD (.addr(csrDB_D ? csrAddrDB_D : instr_D[31:20]),
                                  .csr_out(csrOut),
                                  .csr_read(csrRead_D));
+
+    // Early calculation of linked address (JALR)
+    assign signImm_D = instr_D[6:0] == 7'b1100111 ? readData1_D + signImm : signImm;
 
     // Early write of return address
     assign writeData3 = (&{Branch[2:0]}) ? PC_4 : writeData3_D;
     assign rs1 = regSel0 ? 5'b0: instr_D[19:15];
+
+    // Coprocessor signals
+    assign readDataDB_D = csrDB_D ? csrRead_D : readRegDataDB;
 endmodule

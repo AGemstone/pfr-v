@@ -18,6 +18,8 @@ module csr_dec #(parameter N = 64, W_CSR = 256, HARTID = 0)
             'h342: csr_read = csr_out[2];
             'h305: csr_read = csr_out[3];
             'h341: csr_read = csr_out[4];
+            // U mode read only
+            'hC00: csr_read = csr_out[5];
             default: csr_read = 'h0;
         endcase
 endmodule

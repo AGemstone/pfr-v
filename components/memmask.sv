@@ -6,6 +6,7 @@ module memmask #(parameter N = 64) (
 );
     logic[N-1:0] mask;
     assign mask = {{32{memMask[2]}}, {16{memMask[1]}}, {8{memMask[0]}}, {8'hff}};
+    
     assign readData_M = readOp ? (memMask[2] ? DM_RD :
                                  (memMask[1] ? 
                                      {{32{DM_RD[31]}}, DM_RD[31:0]} :
@@ -17,4 +18,7 @@ module memmask #(parameter N = 64) (
                              ) : 
                              mask & DM_RD;
     assign writeData_M = mask & DM_WD;
+    // assign readData_M = DM_RD;                             
+    // assign writeData_M = DM_WD;
+
 endmodule

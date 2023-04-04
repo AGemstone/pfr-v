@@ -37,7 +37,7 @@ module execute #(
     assign readData1 = regSel1 ? PC_E : readData1_E;
     assign readData2 = AluSrc ? signImm_E : readData2_E;
     assign signedImm_PC = (signImm_E << 1);
-    assign PCBranch_E  = signedImm_PC + PC_E;
+    assign PCBranch_E  = AluSrc ? {signImm_E[N-1:1],1'b0} : signedImm_PC + PC_E;
     assign PC4_E = PC_E + 'h4;
     
 endmodule

@@ -1,16 +1,16 @@
 module fetch #(parameter N = 64) (
     input logic[N-1: 0] PCBranch_F, PC_TrapTrigger, PC_TrapReturn,
     input logic interruptSignal, trapReturn,
-    input logic PCSrc_F, clk, reset,
+    input logic PCSrc_F, clk, reset, PC_enable,
     output logic[N-1: 0] imem_addr_F
 );
     logic[N-1: 0] PC_out, branchMux, trapEntryMux, trapReturnMux;
     logic[N-1: 0] PC_4;
-    flopr #(N) PC(.clk(clk), 
+    flopre #(N) PC(.clk(clk), 
                   .reset(reset), 
-                  .d(trapEntryMux), 
+                  .d(trapEntryMux),
+                  .enable(PC_enable),
                   .q(PC_out));
-
     
     assign PC_4 = PC_out + 'd4;
     assign branchMux = PCSrc_F ? PCBranch_F : PC_4;

@@ -3,9 +3,8 @@ module core #(parameter N = 64)
             input logic[N-1:0] DM_readData,
             output logic [N-1:0] DM_writeData, DM_addr,
             output logic DM_writeEnable, DM_readEnable,
-            input logic dump,
             input logic [14:0] coprocessorIOAddr,
-            input logic [2:0] coprocessorIOControl,
+            input logic [3:0] coprocessorIOControl,
             input logic [N-1:0] coprocessorIODataOut,
             output logic [N-1:0] coprocessorIODataIn);
 
@@ -32,9 +31,10 @@ module core #(parameter N = 64)
     logic[15:0] trapTrigger;
 
     // CSR signals
-    localparam W_CSR = 5;
+    localparam W_CSR = 6;
     logic[N-1:0] csrOut[0:W_CSR-1];
     logic[N-1:0] csrIn;
+    logic[N-1:0] clocksIn,clocksOut;
     logic[11:0] CSR_addr;
     logic csrWriteEnable;
     logic CSR_WriteEnable;
@@ -55,6 +55,13 @@ module core #(parameter N = 64)
                        .currentMode(privMode),
                        .mstatus(csrOut[1]));
     
+    // Counters
+    flopr #(N) cycle_csr(.clk(clk),
+                      .reset(reset),
+                      .d(clocksIn),
+                      .q(csrOut[5]));
+    assign clocksIn = csrOut[5] + 1;
+
     // Processing
     controller c(.funct12(instrMemData[31:20]),
                  .funct3(instrMemData[14:12]), 
@@ -112,7 +119,7 @@ module core #(parameter N = 64)
                             .coprocessorIODataIn(coprocessorIODataIn)
                             );
                       
-    imem instrMem (.addr(IM_address[7:2]),
+    imem instrMem (.addr(IM_address[9:2]),
                    .q(instrMemData));
                                     
     // dmem dataMem(.clk(clk), 
@@ -122,14 +129,16 @@ module core #(parameter N = 64)
     //              .writeData(DM_writeData), 
     //              .readData(readData), 
     //              .dump(dump));
-    // assign DM_readData = readData;
 
     dmemip dataMem(.clock(clk),
                    .data(DM_writeData),
-                   .address(DM_addr[12:3]),
+                   .address(DM_addr[10:3]),
                    .rden(DM_readEnable),
                    .wren(DM_writeEnable),
                    .q(readData));
+
+
+    // assign DM_readData = readData;
   
     // Exceptions
     // no interrupt support for now
