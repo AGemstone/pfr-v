@@ -8,22 +8,24 @@ module processor_tb();
   logic [N-1:0] DM_readData;
   logic [N-1:0] DM_writeData, DM_addr;
   logic DM_writeEnable, DM_readEnable;
-  logic dump;
   logic [14:0] coprocessorIOAddr;
-  logic [2:0] coprocessorIOControl;
+  logic [3:0] coprocessorIOControl;
   logic [N-1:0] coprocessorIODataOut;
   logic [N-1:0] coprocessorIODataIn;
   // instantiate device under test
     core #(N) dut(
-       CLOCK_50, reset,
-       DM_readData,
-       DM_writeData, DM_addr,
-       DM_writeEnable, DM_readEnable,
-       dump,
-       coprocessorIOAddr,
-       coprocessorIOControl,
-       coprocessorIODataOut,
-       coprocessorIODataIn);
+       .clk(CLOCK_50), 
+       .reset(reset),
+       .DM_readData(DM_readData),
+       .DM_writeData(DM_writeData), 
+       .DM_addr(DM_addr),
+       .DM_writeEnable(DM_writeEnable), 
+       .DM_readEnable(DM_readEnable),
+       .coprocessorIOAddr(coprocessorIOAddr),
+       .coprocessorIOControl(coprocessorIOControl),
+       .coprocessorIODataOut(coprocessorIODataOut),
+       .coprocessorIODataIn(coprocessorIODataIn)
+       );
   
 
   // generate clock
@@ -35,11 +37,15 @@ module processor_tb();
 
     initial
     begin
-        coprocessorIODataIn = 0;
-        coprocessorIOControl = 0;
-        CLOCK_50 = 0; reset = 1; dump = 0;
-        #20 reset = 0; 
-        #10000 dump = 1; 
-        #20 $stop;
+        coprocessorIODataOut = 1; coprocessorIOAddr = 4; coprocessorIOControl = 0;
+        CLOCK_50 = 0; reset = 1;
+        #20 reset = 0;
+        #500 coprocessorIOControl = 1;
+        $display ("Internal signal value is %h", processor_tb.dut.dp.DECODE.registers.ram[4]);
+        #20 coprocessorIOControl = 0;
+        $display ("Internal signal value is %h", processor_tb.dut.dp.DECODE.registers.ram[4]);
+        #10000
+        $display ("Internal signal value is %h", processor_tb.dut.dp.DECODE.registers.ram[10]);
+        $stop;
     end 
 endmodule

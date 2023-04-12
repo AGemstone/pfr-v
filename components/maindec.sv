@@ -1,4 +1,5 @@
 module maindec (
+    input logic coprocessorStall,
     input logic[6:0] Op,
     input logic[2:0] funct3,
     input logic[11:0] funct12,
@@ -17,6 +18,10 @@ module maindec (
     assign csrPrivCheck = ~subPriv_CSRAddr[2];
 
     always_comb
+        // If coprocessor is resetting or injecting a fault
+        if (coprocessorStall)
+            outputSignal = 'b0;
+        else begin
 	    if (Op == 7'b1100011) begin
             // beq 
             if (funct3 == 3'b000)
@@ -141,7 +146,7 @@ module maindec (
         // undefined / illegal instruction
         else 
             outputSignal = 'b000_100_0_00_000_00_0_000_000_00;
-
+        end
     assign trapReturn = outputSignal[22];
     assign aluSelect = outputSignal[21];
     assign csrWriteEnable = outputSignal[20];

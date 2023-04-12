@@ -81,7 +81,8 @@ module core #(parameter N = 64)
                  .csrWriteEnable(csrWriteEnable),
                  .exceptSignal_D(exceptSignal_D),
                  .memWrite(memWrite),
-                 .privMode(privMode));                    
+                 .privMode(privMode),
+                 .coprocessorStall((|{coprocessorIOControl})));                    
                     
     datapath #(N, W_CSR) dp(.reset(reset), 
                             .clk(clk), 
@@ -119,7 +120,7 @@ module core #(parameter N = 64)
                             .coprocessorIODataIn(coprocessorIODataIn)
                             );
                       
-    imem instrMem (.addr(IM_address[9:2]),
+    imem instrMem (.addr(IM_address[7:2]),
                    .q(instrMemData));
                                     
     // dmem dataMem(.clk(clk), 

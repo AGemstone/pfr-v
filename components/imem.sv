@@ -3,7 +3,7 @@ module imem #(parameter N = 32)(
     output logic[N-1:0] q
 );
     logic [N - 1:0] rom [0 : 63];
-    assign rom[0:54] = '{
+    assign rom[0:53] = '{
         'h00003023, //   0: sd zero,0(zero) # 0 <start>
         'h00000f93, //   4: li t6,0
         'h40000113, //   8: li sp,1024
@@ -50,16 +50,15 @@ module imem #(parameter N = 32)(
         'h00813823, //  ac: sd s0,16(sp)
         'h00000013, //  b0: nop
         'h02010413, //  b4: addi s0,sp,32
-        'h00bee7b7, //  b8: lui a5,0xbee
-        'head78513, //  bc: addi a0,a5,-339 # bedead <kmain+0xbede0d>
-        'hf51ff0ef, //  c0: jal ra,10 <sum>
-        'hfea43423, //  c4: sd a0,-24(s0)
-        'h00000013, //  c8: nop
-        'h00100f93, //  cc: li t6,1
-        'h01f03023, //  d0: sd t6,0(zero) # 0 <start>
-        'h00000013, //  d4: nop
-        'hffdff06f  //  d8: j d4 <kmain+0x34>
+        'h00500513, //  b8: li a0,5
+        'hf55ff0ef, //  bc: jal ra,10 <sum>
+        'hfea43423, //  c0: sd a0,-24(s0)
+        'h00000013, //  c4: nop
+        'h00100f93, //  c8: li t6,1
+        'h01f03023, //  cc: sd t6,0(zero) # 0 <start>
+        'h00000013, //  d0: nop
+        'hffdff06f  //  d4: j d0 <kmain+0x30>
     };
-    assign rom [55:63] = '{(64-55){'0}};
+    assign rom [54:63] = '{(64-54){'0}};
     assign q = rom[addr];
 endmodule

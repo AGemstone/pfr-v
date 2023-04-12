@@ -1,6 +1,7 @@
 // CONTROLLER
 
 module controller(input logic[6:0] instr, 
+                  input logic coprocessorStall,
                   input logic[11:0] funct12,
                   input logic[2:0] funct3,
                   input logic[1:0] privMode,
@@ -35,6 +36,7 @@ module controller(input logic[6:0] instr,
                      .csrWriteEnable(csrWriteEnable),
                      .exceptSignal(exceptSignal_D),
                      .aluSelect(aluSelect),
+                     .coprocessorStall(coprocessorStall),
                      .ALUOp(AluOp_s));
                                 
     aludec decAlu (.funct3(funct3), 

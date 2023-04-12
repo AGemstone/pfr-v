@@ -19,14 +19,14 @@ module decode #(parameter N = 64, W_CSR = 8)
     logic[N-1:0] writeData3;
     logic[N-1:0] signImm;
     logic[N-1:0] jalrAddr;
-    logic[N-1:0] readRegDataDB, readCSRDataDB, csrReadMux;
+    logic[N-1:0] readRegDataDB, readCSRDataDB, csrReadMux, writeMaskDBOut;
     
     regfile	registers(.clk(clk), 
                       .we3(regWrite_D | weDB_D), 
                       .wa3(weDB_D ? writeRegDB_D : instr_D[11:7]), 
                       .ra1(rs1), 
                       .ra2(instr_D[24:20]), 
-                      .wd3(weDB_D ? writeDataDB_D : writeData3), 
+                      .wd3(weDB_D ? writeMaskDBOut ^ readRegDataDB : writeData3), 
                       .rd1(readData1_D), 
                       .rd2(readData2_D),
                       .ra_db(readRegDB_D),
@@ -49,4 +49,9 @@ module decode #(parameter N = 64, W_CSR = 8)
 
     // Coprocessor signals
     assign readDataDB_D = csrDB_D ? csrRead_D : readRegDataDB;
+    bitwiseMux writeMaskDB(.a(readRegDataDB),
+                           .b(~readRegDataDB),
+                           .s(writeDataDB_D),
+                           .y(writeMaskDBOut));
 endmodule
+

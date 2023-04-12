@@ -87,20 +87,19 @@ nop
 .cfi_offset 8, -16
 addi	s0,sp,32
 .cfi_def_cfa 8, 0
-.loc 1 19 33
-li	a5,12509184
-addi	a0,a5,-339
+.loc 1 15 33
+li	a0,5
 call	sum
 sd	a0,-24(s0)
 nop
-.loc 1 20 3
+.loc 1 16 3
 #APP
-# 20 "csum.c" 1
+# 16 "csum.c" 1
 li t6, 1;                sd t6, 0(zero);
 # 0 "" 2
 #NO_APP
 .L6:
-.loc 1 23 3 discriminator 1
+.loc 1 19 3 discriminator 1
 nop
 j	.L6
 .cfi_endproc
@@ -135,7 +134,7 @@ j	.L6
 .4byte	0x5e
 .byte	0x1
 .4byte	.LASF3
-.byte	0x13
+.byte	0xf
 .4byte	0x65
 .byte	0x2
 .byte	0x91
