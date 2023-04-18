@@ -11,7 +11,7 @@ module controller(input logic[6:0] instr,
                   output logic AluSrc, regWrite, memtoReg, memWrite, wArith,
                   output logic csrWriteEnable, trapReturn,
                   output logic breakSrc, aluSelect,
-                  output logic[2:0] Branch, memMask);
+                  output logic[2:0] Branch, memWidth);
                                             
     logic[1:0] AluOp_s;
     logic[3:0] aluControlNormal, aluControlAtomic;
@@ -31,7 +31,7 @@ module controller(input logic[6:0] instr,
                      .Branch(Branch),
                      .regSel(regSel),
                      .wArith(wArith),
-                     .memMask(memMask),
+                     .memWidth(memWidth),
                      .trapReturn(trapReturn),
                      .csrWriteEnable(csrWriteEnable),
                      .exceptSignal(exceptSignal_D),

@@ -26,7 +26,7 @@ module decode #(parameter N = 64, W_CSR = 8)
                       .wa3(weDB_D ? writeRegDB_D : instr_D[11:7]), 
                       .ra1(rs1), 
                       .ra2(instr_D[24:20]), 
-                      .wd3(weDB_D ? writeMaskDBOut ^ readRegDataDB : writeData3), 
+                      .wd3(weDB_D ? writeMaskDBOut : writeData3), 
                       .rd1(readData1_D), 
                       .rd2(readData2_D),
                       .ra_db(readRegDB_D),
@@ -49,9 +49,8 @@ module decode #(parameter N = 64, W_CSR = 8)
 
     // Coprocessor signals
     assign readDataDB_D = csrDB_D ? csrRead_D : readRegDataDB;
-    bitwiseMux writeMaskDB(.a(readRegDataDB),
-                           .b(~readRegDataDB),
-                           .s(writeDataDB_D),
-                           .y(writeMaskDBOut));
+    wideXOR bitflip(.a(readRegDataDB),
+                    .mask(writeDataDB_D),
+                    .y(writeMaskDBOut));
 endmodule
 

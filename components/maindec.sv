@@ -7,7 +7,7 @@ module maindec (
     output logic[1:0] regSel, MemRead,
     output logic ALUSrc, MemtoReg, RegWrite, MemWrite, wArith, aluSelect,
     output logic csrWriteEnable, trapReturn,
-    output logic[2:0] Branch, memMask, exceptSignal,
+    output logic[2:0] Branch, memWidth, exceptSignal,
     output logic[1:0] ALUOp
 );
     logic [22:0] outputSignal;
@@ -161,7 +161,7 @@ module maindec (
     assign MemRead      = outputSignal[10:9];
     assign MemWrite     = outputSignal[8];
     // 000: byte, 001: half, 011: word, 111: double
-    assign memMask      = outputSignal[7:5];
+    assign memWidth      = outputSignal[7:5];
     // 000: no branch, 
     // 001: branch if zero, 011: Branch if not zero
     // 101: Branch if LT, 100: Branch if GE
@@ -171,15 +171,3 @@ module maindec (
     assign ALUOp        = outputSignal[1:0];
     
 endmodule
-/*
-00_
-1 alusrc
-1 memtoreg
-1 regwr
-11 memread
-0 memwrite
-0 mask
-no branch
-alu 0
-_11_0_111_000_00
-*/

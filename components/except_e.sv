@@ -7,8 +7,9 @@ module except_E #(parameter N = 64)
     assign alignDetect = (|{DM_addr[3:0]});
     // memOp = 0 is read, memOp = 1 is write
     // Format: breakpoint, write page fault,read page fault, write access fault/misalign, read access fault/misalign
-    assign exceptSignal = memOp ?
-                          {{1'b0}, {2'b0}, {1'b0}, {alignDetect & memOp[1]}, {1'b0}, {alignDetect & memOp[0]}} :
-                          '0;
+    assign exceptSignal = '0;
+                        //   memOp ?
+                        //   {{1'b0}, {2'b0}, {1'b0}, {alignDetect & memOp[1]}, {1'b0}, {alignDetect & memOp[0]}} :
+                        //   '0;
 
 endmodule

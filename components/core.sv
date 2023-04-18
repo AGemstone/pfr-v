@@ -4,7 +4,7 @@ module core #(parameter N = 64)
             output logic [N-1:0] DM_writeData, DM_addr,
             output logic DM_writeEnable, DM_readEnable,
             input logic [14:0] coprocessorIOAddr,
-            input logic [3:0] coprocessorIOControl,
+            input logic [4:0] coprocessorIOControl,
             input logic [N-1:0] coprocessorIODataOut,
             output logic [N-1:0] coprocessorIODataIn);
 
@@ -14,13 +14,14 @@ module core #(parameter N = 64)
     logic[3:0] AluControl;
     logic regWrite, memtoReg, memWrite, AluSrc, wArith, aluSelect;
     logic[1:0] regSel, memRead;
-    logic[2:0] Branch, memMask;
+    logic[2:0] Branch, memWidth;
     logic[2:0] breakSrc;
     logic trapReturn;
     
     // Memory signals
     logic[31:0] instrMemData;
     logic[N-1:0] readData, IM_address;
+    logic[7:0] DM_WriteMask;
     
     // Exception signals 
     logic[3:0] exceptSignal_F;
@@ -34,21 +35,31 @@ module core #(parameter N = 64)
     localparam W_CSR = 6;
     logic[N-1:0] csrOut[0:W_CSR-1];
     logic[N-1:0] csrIn;
-    logic[N-1:0] clocksIn,clocksOut;
+    logic[N-1:0] cyclesIn;
     logic[11:0] CSR_addr;
     logic csrWriteEnable;
     logic CSR_WriteEnable;
+
+    // Coprocessor aux
+    logic[N-1:0] cycle_cmpOut;
+    logic[N-1:0] coprocessorIODataIn_register;
+    logic cycleStall;
+    assign coprocessorIODataIn = cycleStall ? 
+                                 'hfeedc0de : 
+                                 (coprocessorIOControl[3] ? 
+                                 readData : 
+                                 coprocessorIODataIn_register);
 
     // CSR
     flopre #(N) mscratch_csr(.clk(clk),
                              .reset(reset),
                              .d(csrIn),
-                             .enable((CSR_addr == 'h340) && CSR_WriteEnable),
+                             .enable((CSR_addr == 'h340) & CSR_WriteEnable),
                              .q(csrOut[0])); 
 
     core_status status(.trapTrigger(trapTrigger),
                        .trapReturn(trapReturn),
-                       .mstatusCSREnable((CSR_addr == 'h300) && CSR_WriteEnable),
+                       .mstatusCSREnable((CSR_addr == 'h300) & CSR_WriteEnable),
                        .clk(clk),
                        .reset(reset),
                        .csrIn(csrIn),
@@ -56,11 +67,19 @@ module core #(parameter N = 64)
                        .mstatus(csrOut[1]));
     
     // Counters
-    flopr #(N) cycle_csr(.clk(clk),
-                      .reset(reset),
-                      .d(clocksIn),
-                      .q(csrOut[5]));
-    assign clocksIn = csrOut[5] + 1;
+    flopre #(N) cycle_csr(.clk(clk),
+                          .reset(reset),
+                          .d(csrOut[5] + 1),
+                          .enable(~(|{cycleStall, coprocessorIOControl[3:0]})),
+                          .q(csrOut[5]));
+
+    // Coprocessor csr
+    flopre #(N) cycle_cmp(.clk(clk),
+                          .reset(~coprocessorIOControl[4]),
+                          .d(coprocessorIODataOut),
+                          .enable(coprocessorIOControl[4] & coprocessorIOControl[3] & coprocessorIOAddr[12]),
+                          .q(cycle_cmpOut));
+    assign cycleStall = (cycle_cmpOut == csrOut[5]) & coprocessorIOControl[4];
 
     // Processing
     controller c(.funct12(instrMemData[31:20]),
@@ -72,7 +91,7 @@ module core #(parameter N = 64)
                  .regSel(regSel),
                  .Branch(Branch),
                  .wArith(wArith),
-                 .memMask(memMask),
+                 .memWidth(memWidth),
                  .memtoReg(memtoReg), 
                  .memRead(memRead),
                  .aluSelect(aluSelect),
@@ -82,7 +101,7 @@ module core #(parameter N = 64)
                  .exceptSignal_D(exceptSignal_D),
                  .memWrite(memWrite),
                  .privMode(privMode),
-                 .coprocessorStall((|{coprocessorIOControl})));                    
+                 .coprocessorStall((|{cycleStall, coprocessorIOControl[3:0]})));
                     
     datapath #(N, W_CSR) dp(.reset(reset), 
                             .clk(clk), 
@@ -92,7 +111,7 @@ module core #(parameter N = 64)
                             .AluControl(AluControl), 
                             .Branch(Branch), 
                             .wArith(wArith),
-                            .memMask(memMask),
+                            .memWidth(memWidth),
                             .memRead(memRead),
                             .memWrite(memWrite), 
                             .regWrite(regWrite), 
@@ -115,30 +134,25 @@ module core #(parameter N = 64)
                             .csrWriteEnable(csrWriteEnable),
                             .CSR_WriteEnable(CSR_WriteEnable),
                             .coprocessorIOAddr(coprocessorIOAddr),
-                            .coprocessorIOControl(coprocessorIOControl),
+                            .coprocessorIOControl({cycleStall, coprocessorIOControl[3:0]}),
                             .coprocessorIODataOut(coprocessorIODataOut),
-                            .coprocessorIODataIn(coprocessorIODataIn)
+                            .coprocessorIODataIn(coprocessorIODataIn_register)
                             );
                       
-    imem instrMem (.addr(IM_address[7:2]),
+    imem instrMem (.addr(IM_address[9:2]),
                    .q(instrMemData));
-                                    
-    // dmem dataMem(.clk(clk), 
-    //              .memWrite(DM_writeEnable), 
-    //              .memRead(DM_readEnable), 
-    //              .address(DM_addr[9:3]), 
-    //              .writeData(DM_writeData), 
-    //              .readData(readData), 
-    //              .dump(dump));
-
+    
+    memWriteMask MEMWRITE_MASK(.select(DM_addr[2:0]),
+                               .memWidth(memWidth),
+                               .byteenable(DM_WriteMask));
+    
     dmemip dataMem(.clock(clk),
                    .data(DM_writeData),
-                   .address(DM_addr[10:3]),
-                   .rden(DM_readEnable),
+                   .address(coprocessorIOControl[3] ? coprocessorIOAddr[10:3] : DM_addr[10:3]),
+                   .rden(coprocessorIOControl[3] | DM_readEnable),
+                   .byteena(DM_WriteMask),
                    .wren(DM_writeEnable),
                    .q(readData));
-
-
     // assign DM_readData = readData;
   
     // Exceptions

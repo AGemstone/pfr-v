@@ -7,6 +7,7 @@ import os
 TOOLCHAIN = "riscv64-unknown-linux-gnu"
 CWD = os.getcwd()
 
+
 def instr_parse(x):
     res = ""
     try:
@@ -60,7 +61,8 @@ elif sys.argv[2][-1] == "c":
 
     # Final assembly
     subp_run(f"{TOOLCHAIN} -c {CC_FLAGS} {KERNEL}_patch.s -o {KERNEL}.o")
-    sp.run(["make", "compile"], env=environment)
+    sp.run(["make", "gcc"], env=environment)
+    sp.run(["make", "clean_partial"], env=environment)
 
 else:
     print(".s for assembly, .c for c")
@@ -88,7 +90,7 @@ opcode_list = list(opcode_list)
 opcode_list[-1] = f"{opcode_list[-1][:-1]} "
 
 prog_length = len(opcode_list)
-ADDR_BITS = int(math.log(prog_length)/math.log(2)) +1
+ADDR_BITS = int(math.log(prog_length)/math.log(2)) + 1
 IMEM_SIZE = 2**ADDR_BITS
 
 module_write = "module imem #(parameter N = 32)(\n"
@@ -113,3 +115,12 @@ if prog_length > IMEM_SIZE:
 os.chdir(CWD)
 with open(f"{sys.argv[1]}/imem.sv", "w") as f:
     f.write(module_write)
+
+# Adjust imem addressing
+with open(f"{sys.argv[1]}/core.sv", "r") as f:
+    lines = f.readlines()
+    index = [idx for idx, s in enumerate(lines) if 'imem instrMem' in s][0]
+    lines[index] = f"    imem instrMem (.addr(IM_address[{ADDR_BITS + 1}:2]),\n"
+
+with open(f"{sys.argv[1]}/core.sv", "w") as f:
+    f.write("".join(lines))

@@ -3,7 +3,7 @@
 module datapath #(parameter N = 64, W_CSR = 256)
                 (input logic reset, clk,
                  input logic [3:0] AluControl,
-                 input logic[2:0] Branch, memMask,
+                 input logic[2:0] Branch, memWidth,
                  input logic[1:0] regSel, memRead,
                  input logic AluSrc,
                  input logic memWrite,
@@ -18,7 +18,7 @@ module datapath #(parameter N = 64, W_CSR = 256)
                  input logic [N-1:0] DM_readData,
                  input logic[N-1:0] csrOut[0:W_CSR-1],
                  input logic [14:0] coprocessorIOAddr,
-                 input logic [3:0] coprocessorIOControl,
+                 input logic [4:0] coprocessorIOControl,
                  input logic [N-1:0] coprocessorIODataOut,
                  output logic [N-1:0] coprocessorIODataIn,
                  output logic[N-1:0] csrIn,
@@ -109,15 +109,15 @@ module datapath #(parameter N = 64, W_CSR = 256)
                    .overflow_W(overflow_E),
                    .PCSrc_W(PCSrc));
 
-    memmask MEM_MASK(.DM_RD(DM_readData),
-                     .DM_WD(writeData_E),
-                     .memMask(memMask),
-                     .readOp(memRead[1]),
-                     .readData_M(Mask_readData),
-                     .writeData_M(DM_writeData));
+    memReadMask MEMREAD_MASK(.DM_RD(DM_readData),
+                             .memWidth(memWidth),
+                             .readOp(memRead[1]),
+                             .memOffset(DM_addr[2:0]),
+                             .readData_M(Mask_readData));
 
     assign DM_writeEnable = memWrite;
     assign DM_readEnable = memRead[0];
+    assign DM_writeData = readData2_D;
 
     assign CSR_addr = IM_readData[31:20];
     assign CSR_WriteEnable = csrWriteEnable;
