@@ -1,6 +1,7 @@
 TOOLCHAIN=riscv64-unknown-linux-gnu
 # LIBGCC=/opt/riscv/lib/gcc/riscv64-unknown-linux-gnu/12.1.0/
 # LIBGCC=/opt/riscv/riscv64-unknown-linux-gnu/lib
+RV=1
 LIBGCC=/opt/riscv/lib/gcc/riscv64-unknown-elf/12.2.0/libgcc.a
 CC_FLAGS=-Wall -g -Wextra -ffreestanding
 LD_FLAGS=-nostdlib

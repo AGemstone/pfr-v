@@ -1,4 +1,4 @@
-// int kmain(void);
+int main(void);
 unsigned long long sum(unsigned long long n);
 
 unsigned long long sum(unsigned long long n) {

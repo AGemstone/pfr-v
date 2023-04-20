@@ -16,7 +16,7 @@ start:
 	/* la sp, stack_top */
 	/* Fixed value due to lack of memory map / constraints*/
 	li sp, 1024
-	/* Jump to kernel! */
-	tail kmain
+	/* Jump to main */
+	tail main
 	.cfi_endproc
 .end

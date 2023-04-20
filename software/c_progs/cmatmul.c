@@ -11,9 +11,7 @@ void matrix_mul(const long *a, const long *b, long *mul) {
   }
 }
 
-int kmain() {
-  unsigned int c = 0;unsigned int d = 0l;
-  __asm("nop");
+int main() {
   long a[N * N] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
   long b[N * N] = {10, 0, 0, 4, 8, 6, 1, 7, 1};
   long mul[N * N + N];
