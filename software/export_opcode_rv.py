@@ -61,7 +61,7 @@ elif sys.argv[2][-1] == "c":
 
     # Final assembly
     subp_run(f"{TOOLCHAIN} -c {CC_FLAGS} {KERNEL}_patch.s -o {KERNEL}.o")
-    sp.run(["make", "gcc"], env=environment)
+    sp.run(["make", "compile"], env=environment)
     sp.run(["make", "clean_partial"], env=environment)
 
 else:
