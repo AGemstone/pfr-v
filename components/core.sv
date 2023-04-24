@@ -14,7 +14,7 @@ module core #(parameter N = 64)
     logic[3:0] AluControl;
     logic regWrite, memtoReg, memWrite, AluSrc, wArith, aluSelect;
     logic[1:0] regSel, memRead;
-    logic[2:0] Branch, memWidth;
+    logic[2:0] Branch, memWidth, memWidth_M;
     logic[2:0] breakSrc;
     logic trapReturn;
     
@@ -136,23 +136,21 @@ module core #(parameter N = 64)
                             .coprocessorIOAddr(coprocessorIOAddr),
                             .coprocessorIOControl({cycleStall, coprocessorIOControl[3:0]}),
                             .coprocessorIODataOut(coprocessorIODataOut),
-                            .coprocessorIODataIn(coprocessorIODataIn_register)
+                            .coprocessorIODataIn(coprocessorIODataIn_register),
+                            .memWidth_M(memWidth_M)
                             );
                       
-    imem instrMem (.addr(IM_address[9:2]),
+    imem instrMem (.addr(IM_address[7:2]),
                    .q(instrMemData));
     
-    memWriteMask MEMWRITE_MASK(.select(DM_addr[2:0]),
-                               .memWidth(memWidth),
-                               .byteenable(DM_WriteMask));
-    
-    dmemip dataMem(.clock(clk),
-                   .data(DM_writeData),
-                   .address(coprocessorIOControl[3] ? coprocessorIOAddr[10:3] : DM_addr[10:3]),
-                   .rden(coprocessorIOControl[3] | DM_readEnable),
-                   .byteena(DM_WriteMask),
-                   .wren(DM_writeEnable),
-                   .q(readData));
+    dmem dataMem(.clk(clk),
+                 .DM_writeData(DM_writeData),
+                 .readEnable(coprocessorIOControl[3] | DM_readEnable),
+                 .writeEnable(DM_writeEnable),
+                 .memWidth(memWidth_M),
+                 .wordAddr(coprocessorIOControl[3] ? coprocessorIOAddr[10:3] : DM_addr[10:3]),
+                 .byteOffset(DM_addr[2:0]),
+                 .DM_readData(readData));
     // assign DM_readData = readData;
   
     // Exceptions

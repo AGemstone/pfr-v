@@ -26,6 +26,7 @@ module datapath #(parameter N = 64, W_CSR = 256)
                  output logic [11:0] CSR_addr,
                  output logic DM_writeEnable, DM_readEnable,
                  output logic CSR_WriteEnable,
+                 output logic[2:0] memWidth_M,
                  output logic[3:0] exceptSignal_F, 
                  output logic[6:0] exceptSignal_E, 
                  output logic[1:0] breakSrc);
@@ -33,16 +34,10 @@ module datapath #(parameter N = 64, W_CSR = 256)
     logic PCSrc;
     logic [N-1:0] PCBranch_E, PC_4, aluResult_E, writeData_E, writeData3; 
     logic [N-1:0] signImm_D, readData1_D, readData2_D;
-    logic [N-1:0] Mask_readData, Mask_writeData;
+    logic [N-1:0] readDataMasked_M, Mask_writeData;
     logic zero_E, overflow_E, sign_E;
     logic [N-1:0] csrRead_D, aluResultAtom0_E, aluResultAtom1_E;
     logic PC_enable;
-
-    memoryStall memStall(.clk(clk),
-                         .reset(reset),
-                         .memOp(|{memRead}),
-                         .dataReadDM(Mask_readData),
-                         .PC_enable(PC_enable));
 
     fetch #(N) FETCH(.PCSrc_F(PCSrc),
                      .clk(clk),
@@ -58,7 +53,6 @@ module datapath #(parameter N = 64, W_CSR = 256)
     except_F eC_F(.PC(IM_addr),
                   .iAlign(1'b0),
                   .exceptSignal(exceptSignal_F));
-
 
     decode #(N, W_CSR) DECODE(.regWrite_D(regWrite),
                               .clk(clk),
@@ -103,28 +97,31 @@ module datapath #(parameter N = 64, W_CSR = 256)
                    .memOp({memWrite, memRead[0]}),
                    .exceptSignal(exceptSignal_E));
 
-    branching BRANCH(.Branch_W(Branch),
-                   .zero_W(zero_E),
-                   .sign_W(sign_E),
-                   .overflow_W(overflow_E),
-                   .PCSrc_W(PCSrc));
+    memory #(N) MEMORY(
+    .Branch_E(Branch),
+    .zero_E(zero_E),
+    .sign_E(sign_E),
+    .overflow_E(overflow_E),
+    .PCSrc_W(PCSrc),
 
-    memReadMask MEMREAD_MASK(.DM_RD(DM_readData),
-                             .memWidth(memWidth),
-                             .readOp(memRead[1]),
-                             .memOffset(DM_addr[2:0]),
-                             .readData_M(Mask_readData));
+    .DM_readData_E(DM_readData),
+    .memWidth(memWidth),
+    .signedRead(memRead[1]),
+    .byteOffset(DM_addr[2:0]),
+    .readDataMasked_M(readDataMasked_M)
+    );
 
     assign DM_writeEnable = memWrite;
     assign DM_readEnable = memRead[0];
     assign DM_writeData = readData2_D;
+    assign memWidth_M = memWidth;
 
     assign CSR_addr = IM_readData[31:20];
     assign CSR_WriteEnable = csrWriteEnable;
     assign csrIn = aluResultAtom1_E;
 
     writeback #(N) WRITEBACK(.aluResult_W(DM_addr), 
-                             .DM_readData_W(Mask_readData), 
+                             .DM_readData_W(readDataMasked_M), 
                              .memtoReg(memtoReg), 
                              .writeData3_W(writeData3));
 

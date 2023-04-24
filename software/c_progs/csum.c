@@ -12,7 +12,7 @@ unsigned long long sum(unsigned long long n) {
 }
 
 int main(void) {
-  unsigned long long result_1 = sum(0xbedead);
+  unsigned long long result_1 = sum(4);
   __asm("li t6, 1;       \
          sd t6, 0(zero); \
         ");

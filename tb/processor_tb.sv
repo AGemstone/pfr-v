@@ -55,7 +55,7 @@ module processor_tb();
         // #20 
         // coprocessorIOControl = 0;
         // $display ("Internal signal value is %h", processor_tb.dut.dp.DECODE.registers.ram[4]);
-        #1000
+        #100000
         for(int i = 0; i < 4;i++)begin
         coprocessorIOAddr = i * 8; 
         coprocessorIOControl = 'b01000;

@@ -46,7 +46,7 @@ int main() {
   // first and last are endpoints
   // we assume the relative distance between the nodes stays the same
   Node_t network[MESH_NODE_COUNT + 2];
-//   network_init(network);
+  network_init(network);
 //   for (;;)
 //     ;
   return 0;
