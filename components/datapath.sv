@@ -42,7 +42,7 @@ module datapath #(parameter N = 64, W_CSR = 256)
     fetch #(N) FETCH(.PCSrc_F(PCSrc),
                      .clk(clk),
                      .reset(reset),
-                     .PC_TrapTrigger({{2'b0}, {csrOut[3][N-1:4]}, {2'b0}}),
+                     .PC_TrapTrigger({{csrOut[3][N-1:2]}, {2'b0}}),
                      .PC_TrapReturn(csrOut[4]),
                      .trapReturn(trapReturn),
                      .interruptSignal(trapTrigger),
@@ -97,19 +97,16 @@ module datapath #(parameter N = 64, W_CSR = 256)
                    .memOp({memWrite, memRead[0]}),
                    .exceptSignal(exceptSignal_E));
 
-    memory #(N) MEMORY(
-    .Branch_E(Branch),
-    .zero_E(zero_E),
-    .sign_E(sign_E),
-    .overflow_E(overflow_E),
-    .PCSrc_W(PCSrc),
-
-    .DM_readData_E(DM_readData),
-    .memWidth(memWidth),
-    .signedRead(memRead[1]),
-    .byteOffset(DM_addr[2:0]),
-    .readDataMasked_M(readDataMasked_M)
-    );
+    memory #(N) MEMORY(.Branch_E(Branch),
+                       .zero_E(zero_E),
+                       .sign_E(sign_E),
+                       .overflow_E(overflow_E),
+                       .PCSrc_W(PCSrc),
+                       .DM_readData_E(DM_readData),
+                       .memWidth(memWidth),
+                       .signedRead(memRead[1]),
+                       .byteOffset(DM_addr[2:0]),
+                       .readDataMasked_M(readDataMasked_M));
 
     assign DM_writeEnable = memWrite;
     assign DM_readEnable = memRead[0];

@@ -52,7 +52,7 @@ module memControl #(parameter N = 64)
             end
         end
         else begin
-            dataRead = 'Z;
+            dataRead <= 'Z;
         end
     end
     // timing, adjusted for CAS: 2 - 125MHz

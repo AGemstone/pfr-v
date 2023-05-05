@@ -6,7 +6,8 @@ module core #(parameter N = 64)
             input logic [14:0] coprocessorIOAddr,
             input logic [4:0] coprocessorIOControl,
             input logic [N-1:0] coprocessorIODataOut,
-            output logic [N-1:0] coprocessorIODataIn);
+            output logic [N-1:0] coprocessorIODataIn,
+            output logic [1:0] coprocessorIODebugFlags);
 
     logic[1:0] privMode;
 
@@ -19,6 +20,7 @@ module core #(parameter N = 64)
     logic trapReturn;
     
     // Memory signals
+    logic[31:0] instrMemText;
     logic[31:0] instrMemData;
     logic[N-1:0] readData, IM_address;
     logic[7:0] DM_WriteMask;
@@ -41,14 +43,13 @@ module core #(parameter N = 64)
     logic CSR_WriteEnable;
 
     // Coprocessor aux
-    logic[N-1:0] cycle_cmpOut;
+    logic[N-1:0] cycleStall_flagOut;
     logic[N-1:0] coprocessorIODataIn_register;
-    logic cycleStall;
-    assign coprocessorIODataIn = cycleStall ? 
-                                 'hfeedc0de : 
-                                 (coprocessorIOControl[3] ? 
+    logic cycleStall, ebreak_flagOut;
+    assign coprocessorIODataIn = coprocessorIOControl[2] ? 
                                  readData : 
-                                 coprocessorIODataIn_register);
+                                 coprocessorIODataIn_register;
+    assign coprocessorIODebugFlags[0] = cycleStall;
 
     // CSR
     flopre #(N) mscratch_csr(.clk(clk),
@@ -66,6 +67,13 @@ module core #(parameter N = 64)
                        .currentMode(privMode),
                        .mstatus(csrOut[1]));
     
+    // csrbank systemControl(.clk(clk),
+    //                       .reset(reset),
+    //                       .csrIn(csrIn),
+    //                       .csrOut(csrOut),
+
+
+    // );
     // Counters
     flopre #(N) cycle_csr(.clk(clk),
                           .reset(reset),
@@ -74,17 +82,25 @@ module core #(parameter N = 64)
                           .q(csrOut[5]));
 
     // Coprocessor csr
-    flopre #(N) cycle_cmp(.clk(clk),
+    flopre #(N) cycleStall_flag(.clk(clk),
                           .reset(~coprocessorIOControl[4]),
                           .d(coprocessorIODataOut),
                           .enable(coprocessorIOControl[4] & coprocessorIOControl[3] & coprocessorIOAddr[12]),
-                          .q(cycle_cmpOut));
-    assign cycleStall = (cycle_cmpOut == csrOut[5]) & coprocessorIOControl[4];
+                          .q(cycleStall_flagOut));
+
+    flopre #(1) ebreak_flag(.clk(clk),
+                            .reset(reset),
+                            .d(coprocessorIOControl[3] ? coprocessorIODataOut[0] : exceptSignal_D[0]),
+                            .enable(exceptSignal_D[0] | (coprocessorIOControl[3] & coprocessorIOAddr[12] & coprocessorIOAddr[0])),
+                            .q(coprocessorIODebugFlags[1]));
+
+
+    assign cycleStall = (cycleStall_flagOut == csrOut[5]) & coprocessorIOControl[4];
 
     // Processing
-    controller c(.funct12(instrMemData[31:20]),
-                 .funct3(instrMemData[14:12]), 
-                 .instr(instrMemData[6:0]),
+    controller c(.funct12(instrMemText[31:20]),
+                 .funct3(instrMemText[14:12]), 
+                 .instr(instrMemText[6:0]),
                  .AluControl(AluControl), 
                  .regWrite(regWrite), 
                  .AluSrc(AluSrc), 
@@ -118,7 +134,7 @@ module core #(parameter N = 64)
                             .memtoReg(memtoReg),
                             .trapReturn(trapReturn),
                             .trapTrigger({|trapTrigger}),
-                            .IM_readData(instrMemData), 
+                            .IM_readData(instrMemText), 
                             .DM_readData(readData), 
                             .IM_addr(IM_address), 
                             .DM_addr(DM_addr), 
@@ -140,17 +156,22 @@ module core #(parameter N = 64)
                             .memWidth_M(memWidth_M)
                             );
                       
-    imem instrMem (.addr(IM_address[7:2]),
-                   .q(instrMemData));
+    imem instrMem (.addr0(IM_address[9:2]),
+                   .addr1({DM_addr[15], DM_addr[9:3]}),
+                   .q0(instrMemText),
+                   .q1(instrMemData));
     
     dmem dataMem(.clk(clk),
-                 .DM_writeData(DM_writeData),
-                 .readEnable(coprocessorIOControl[3] | DM_readEnable),
-                 .writeEnable(DM_writeEnable),
+                 .reset(reset),
+                 .DM_writeData(coprocessorIOControl[1] ? coprocessorIODataOut : DM_writeData),
+                 .readEnable(coprocessorIOControl[2] | DM_readEnable),
+                 .writeEnable(coprocessorIOControl[1] | DM_writeEnable),
                  .memWidth(memWidth_M),
-                 .wordAddr(coprocessorIOControl[3] ? coprocessorIOAddr[10:3] : DM_addr[10:3]),
+                 .wordAddr(coprocessorIOControl[2] ? coprocessorIOAddr[14:3] : DM_addr[14:3]),
                  .byteOffset(DM_addr[2:0]),
-                 .DM_readData(readData));
+                 .IM_readData(instrMemData),
+                 .dataSelect(DM_addr[15]),
+                 .readData(readData));
     // assign DM_readData = readData;
   
     // Exceptions

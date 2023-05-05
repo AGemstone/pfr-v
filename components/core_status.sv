@@ -28,16 +28,19 @@ module core_status #(parameter N = 64)
                                              .d(modeTrapTrigger),
                                              .q(mode));
 
-    logic[3:0] mstatusTrapTrigger, mstatusTrapReturn, mstatusCSRInC;
+    // {MPP, MPIE, MIE}
+    logic[3:0] mstatusTrapTrigger, mstatusTrapReturn, mstatusCSRInPriv;
     logic[N-1:0] mstatusCSRIn;
 
     assign mstatusTrapTrigger = trapTrigger ? 
                                 {mode, mstatus[mie], 1'b0} : 
                                 mstatusTrapReturn;
+    
     assign mstatusTrapReturn = trapReturn ?
                                {{2'b0}, {1'b1}, mstatus[mpie]} : 
-                               mstatusCSRInC;
-    assign mstatusCSRInC = mstatusCSREnable ?
+                               mstatusCSRInPriv;
+    
+    assign mstatusCSRInPriv = mstatusCSREnable ?
                            {csrIn[mpp:mpp-1], csrIn[mpie], csrIn[mie]} :
                            {mstatus[mpp:mpp-1], mstatus[mpie], mstatus[mie]};
 

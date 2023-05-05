@@ -5,13 +5,13 @@ module fetch #(parameter N = 64) (
     output logic[N-1: 0] imem_addr_F
 );
     logic[N-1: 0] PC_out, branchMux, trapEntryMux, trapReturnMux;
-    logic[N-1: 0] PC_4;
+    logic[N-1: 0] PC_4, PC_cmp;
     flopre #(N) PC(.clk(clk), 
                   .reset(reset), 
                   .d(trapEntryMux),
                   .enable(PC_enable),
                   .q(PC_out));
-    
+
     assign PC_4 = PC_out + 'd4;
     assign branchMux = PCSrc_F ? PCBranch_F : PC_4;
     // Exceptions take precedence

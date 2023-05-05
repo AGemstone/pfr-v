@@ -18,7 +18,7 @@ module maindec (
     assign csrPrivCheck = ~subPriv_CSRAddr[2];
 
     always_comb
-        // If coprocessor is resetting or injecting a fault
+        // If coprocessor is soft resetting or injecting a fault
         if (coprocessorStall)
             outputSignal = 'b0;
         else begin
@@ -162,11 +162,11 @@ module maindec (
     assign MemWrite     = outputSignal[8];
     // 000: byte, 001: half, 011: word, 111: double
     assign memWidth      = outputSignal[7:5];
-    // 000: no branch, 
-    // 001: branch if zero, 011: Branch if not zero
+    // 000: No branch, 
+    // 001: Branch if equal, 011: Branch if not equal
     // 101: Branch if LT, 100: Branch if GE
     // 110: Branch if LT, 010: Branch if GE (unsigned)
-    // 111: branch unconditionally, the rest are undefined
+    // 111: Branch unconditionally, the rest are undefined
     assign Branch       = outputSignal[4:2];
     assign ALUOp        = outputSignal[1:0];
     

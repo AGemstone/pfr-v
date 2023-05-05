@@ -6,7 +6,7 @@ module aludec(input  logic [6:0] funct7,
 			  output logic [3:0] alucontrol);  
 		
 	always_comb
-		// loads or stores
+		// Loads, Stores or Upper Immediates
 		if (aluop == 2'b00) 
 			alucontrol = 4'b0010;
 		// Branches						
@@ -35,6 +35,17 @@ module aludec(input  logic [6:0] funct7,
 			// sltu
 			else if (funct7[5] == 1'b0 & funct3 == 3'b011)
 				alucontrol = 4'b1010;
+			
+			// sll
+			else if (funct3 == 3'b001)
+				alucontrol = 4'b0111;
+			// srl
+			else if (funct7[5] == 1'b0 & funct3 == 3'b101)
+				alucontrol = 4'b0011;
+			// sra
+			else if (funct7[5] == 1'b1 & funct3 == 3'b101)
+				alucontrol = 4'b1011;
+
 			else 
 				alucontrol = 4'b1111;
 		// I format

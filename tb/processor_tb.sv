@@ -2,7 +2,7 @@
 
 module processor_tb();
   localparam  N = 64;
-  
+  int fd, i;
   logic CLOCK_50, reset;
   logic [N-1:0] DM_readData;
   logic [N-1:0] DM_writeData, DM_addr;
@@ -11,6 +11,7 @@ module processor_tb();
   logic [4:0] coprocessorIOControl;
   logic [N-1:0] coprocessorIODataOut;
   logic [N-1:0] coprocessorIODataIn;
+  logic [1:0] coprocessorIODebugFlags;
   // instantiate device under test
     core #(N) dut(
        .clk(CLOCK_50), 
@@ -23,7 +24,8 @@ module processor_tb();
        .coprocessorIOAddr(coprocessorIOAddr),
        .coprocessorIOControl(coprocessorIOControl),
        .coprocessorIODataOut(coprocessorIODataOut),
-       .coprocessorIODataIn(coprocessorIODataIn)
+       .coprocessorIODataIn(coprocessorIODataIn),
+       .coprocessorIODebugFlags(coprocessorIODebugFlags)
        );
   
 
@@ -37,31 +39,59 @@ module processor_tb();
 
     initial
     begin
-        // coprocessorIODataOut = 168; 
-        // coprocessorIOAddr = 'h1000; 
-        // coprocessorIOControl = 'b11000;
+      fd = $fopen("./mem.dump", "w");
+      for (int j = 0 ; j < 1; j++) begin
+        coprocessorIODataOut = 0; 
+        coprocessorIOAddr = 'h0000; 
         coprocessorIOControl = 'b00000;
         CLOCK_50 = 0; 
         reset = 1;
         // #20
         // coprocessorIOControl = 'b10000;
-        // coprocessorIOAddr = 10;
-        // coprocessorIODataOut = 'h40000000;
+        // coprocessorIOAddr = 1;
+        // coprocessorIODataOut = 'h100;
         #20 
         reset = 0;
-        // #3380 
-        // coprocessorIOControl = 1;
-        // $display ("Internal signal value is %h", processor_tb.dut.dp.DECODE.registers.ram[4]);
+        // #320 
+        // //coprocessorIOControl = 1;
+        // $display ("Internal signal value is %h", processor_tb.dut.dp.DECODE.registers.ram[1]);
         // #20 
         // coprocessorIOControl = 0;
-        // $display ("Internal signal value is %h", processor_tb.dut.dp.DECODE.registers.ram[4]);
-        #100000
-        for(int i = 0; i < 4;i++)begin
-        coprocessorIOAddr = i * 8; 
-        coprocessorIOControl = 'b01000;
-        #20
-        $display ("%x\n",coprocessorIODataIn);
+        // $display ("Internal signal value is %h", processor_tb.dut.dp.DECODE.registers.ram[1]);
+        #6000
+        $display ("Dumping at %d\n", $time);
+        // Memdump
+        for(i = 0; i < 4096; i++) begin
+          coprocessorIOAddr = i * 8; 
+          coprocessorIOControl = 'b00_10_0;
+          #40
+          $fwrite (fd, "%4d: 0x%x\n", i, coprocessorIODataIn);
         end
-        $stop;
+        #20
+        $fwrite (fd, "After Clear\n");
+        $display ("Clearing at %d\n", $time);
+        // Memclear
+        for(i = 0; i < 4096; i++) begin
+          coprocessorIOAddr = i * 8; 
+          coprocessorIODataOut = 0; 
+          coprocessorIOControl = 'b00_01_0;
+          #40
+          coprocessorIOControl = 'b00_01_0;
+
+        end
+        #20
+        // Memdump
+        for(i = 0; i < 4096; i++) begin
+          coprocessorIOAddr = i * 8; 
+          coprocessorIOControl = 'b00_10_0;
+          #40
+          $fwrite (fd, "%4d: 0x%x\n", i, coprocessorIODataIn);
+        end
+
+
+      end
+      
+      $fclose(fd);
+      $stop;
     end 
 endmodule
