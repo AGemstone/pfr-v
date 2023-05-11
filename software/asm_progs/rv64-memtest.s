@@ -1,14 +1,12 @@
 nop
 nop
-li a0, -1
+li a0, 0x0102030405060708
 sb a0, 0(zero)
 sb a0, 1(zero)
 sb a0, 7(zero)
-
 sh a0, 8(zero)
 sh a0, 9(zero)
 sh a0, 15(zero)
-
 sw a0, 16(zero)
 sw a0, 17(zero)
 sw a0, 22(zero)

@@ -1,26 +1,50 @@
 #ifdef RV
-void printf(const char *){}
+void printf(const char *) {}
 #else
 #include <stdio.h>
 #endif
 
-#define MESH_NODE_COUNT 16
+#include "compile_helpers.h"
+#include "rand.h"
+#include <stdbool.h>
+
+#define MESH_NODE_COUNT 4
+#define MESH_LEVEL_COUNT 4
 #define MAX_NEIGHBORS 8
 #define MESSAGE 0xfeedc0dedeadbeef
+#define SEED 0xadd1c0defeed5eed
+// m = ;
 
+inline unsigned long umod2(unsigned long n, unsigned long bits) {
+  unsigned long d = 1 << bits;
+  return n & (d - 1);
+}
 
 typedef enum { DOWN, UP } status_t;
 typedef struct Node {
-  status_t status:1 ;
-  unsigned int cost : 31;
+  bool up;
+  unsigned int cost;
   unsigned int index;
   unsigned int neighbor_count;
   unsigned int neighbors[MAX_NEIGHBORS];
   long long message;
 } Node_t;
 
+typedef struct Message {
+  unsigned long message;
+  unsigned int last_node;
+} Message_t;
+
+void network_sim() {
+  // select first node
+  unsigned int index = umod2(rand(), 2);
+
+  while (1) {
+  }
+}
+
 void network_init(Node_t *network) {
-  unsigned int neighbors_per_layer[4] = {5,8,8,5};
+  unsigned int neighbors_per_layer[MESH_NODE_COUNT] = {5, 8, 8, 5};
   network[0] = (Node_t){.status = UP,
                         .index = 0,
                         .message = MESSAGE,
@@ -32,22 +56,23 @@ void network_init(Node_t *network) {
     network[i].status = UP;
     network[i].message = 0;
   }
+
   for (unsigned int i = 0; i < 4; i++) {
-    for(unsigned int j = 0; j < 4; j++){
-        network[(j+1)*4].neighbor_count = neighbors_per_layer[i];
+    for (unsigned int j = 0; j < 4; j++) {
+      network[(j + 1) * 4].neighbor_count = neighbors_per_layer[i];
     }
-    for(unsigned int j = 0; j < 4; j++){}
-    for(unsigned int j = 0; j < 4; j++){}
+    for (unsigned int j = 0; j < 4; j++) {
+    }
+    for (unsigned int j = 0; j < 4; j++) {
+    }
   }
-    // network[MESH_NODE_COUNT + 1] = ;
+  // network[MESH_NODE_COUNT + 1] = ;
 }
 
 int main() {
   // first and last are endpoints
   // we assume the relative distance between the nodes stays the same
-  Node_t network[MESH_NODE_COUNT + 2];
+  Node_t network[MESH_NODE_COUNT];
   network_init(network);
-//   for (;;)
-//     ;
   return 0;
 }

@@ -2,3 +2,4 @@ a.out
 *.bak
 *.info
 *.bin
+__pycache__

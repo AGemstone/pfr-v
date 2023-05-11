@@ -95,6 +95,7 @@ module datapath #(parameter N = 64, W_CSR = 256)
     
     except_E eC_E (.DM_addr(DM_addr),
                    .memOp({memWrite, memRead[0]}),
+                   .memWidth(memWidth),
                    .exceptSignal(exceptSignal_E));
 
     memory #(N) MEMORY(.Branch_E(Branch),

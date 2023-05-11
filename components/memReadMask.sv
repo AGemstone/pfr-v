@@ -17,7 +17,7 @@ module memReadMask #(parameter N = 64) (
     assign memOp = {signedRead, memWidth};
     always_comb
     case (memOp)
-        'b1_010 : readDataMasked_M = {{32{DM_readData_shifted[31]}}, DM_readData_shifted[31:0]};
+        'b1_011 : readDataMasked_M = {{32{DM_readData_shifted[31]}}, DM_readData_shifted[31:0]};
         'b1_001 : readDataMasked_M = {{48{DM_readData_shifted[15]}}, DM_readData_shifted[15:0]};
         'b1_000 : readDataMasked_M = {{56{DM_readData_shifted[7]}},  DM_readData_shifted[7:0]};
         default : readDataMasked_M = readMask & DM_readData_shifted;

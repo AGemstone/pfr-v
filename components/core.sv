@@ -156,21 +156,23 @@ module core #(parameter N = 64)
                             .memWidth_M(memWidth_M)
                             );
                       
-    imem instrMem (.addr0(IM_address[9:2]),
-                   .addr1({DM_addr[15], DM_addr[9:3]}),
-                   .q0(instrMemText),
-                   .q1(instrMemData));
+    imem instrMem (.addr0(IM_address[11:2]),
+                  .clk(clk),
+                  //  .addr1({DM_addr[15], DM_addr[10:3]}),
+                   .q0(instrMemText)
+                  //  .q1(instrMemData)
+                   );
     
     dmem dataMem(.clk(clk),
                  .reset(reset),
-                 .DM_writeData(coprocessorIOControl[1] ? coprocessorIODataOut : DM_writeData),
+                 .writeData(coprocessorIOControl[1] ? coprocessorIODataOut : DM_writeData),
                  .readEnable(coprocessorIOControl[2] | DM_readEnable),
                  .writeEnable(coprocessorIOControl[1] | DM_writeEnable),
                  .memWidth(memWidth_M),
                  .wordAddr(coprocessorIOControl[2] ? coprocessorIOAddr[14:3] : DM_addr[14:3]),
                  .byteOffset(DM_addr[2:0]),
-                 .IM_readData(instrMemData),
-                 .dataSelect(DM_addr[15]),
+                //  .IM_readData(instrMemData),
+                //  .dataSelect(DM_addr[15]),
                  .readData(readData));
     // assign DM_readData = readData;
   
