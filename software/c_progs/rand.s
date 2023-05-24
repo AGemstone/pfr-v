@@ -5,6 +5,14 @@
 	.attribute stack_align, 16
 	.text
 	.align	2
+	.globl	rand_init
+	.type	rand_init, @function
+rand_init:
+	lui	a5,%hi(state)
+	sd	a0,%lo(state)(a5)
+	ret
+	.size	rand_init, .-rand_init
+	.align	2
 	.globl	rand
 	.type	rand, @function
 rand:

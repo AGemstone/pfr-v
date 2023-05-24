@@ -9,7 +9,7 @@ EXTRASOURCES=$(filter-out #include,\
 RV=1
 
 ifdef SOFTMUL
-	EXTRALIBS+=$(TOOLCHAIN)-ar -xv $(LIBGCC) muldi3.o umoddi3.o _umoddi3;
+	EXTRALIBS+=$(TOOLCHAIN)-ar -xv $(LIBGCC) muldi3.o;
 endif
 
 normal:
@@ -34,3 +34,8 @@ clean: clean_partial
 	rm a.out
 	
 gcc: normal compile
+
+x86: 
+	$(foreach UNIT, $(EXTRASOURCES), gcc -c -Os lib/$(UNIT) -g -o $(UNIT).o;)
+	gcc -c $(KERNEL)/$(KERNEL).c -o $(KERNEL).o -I./lib -g
+	gcc *.o -o a.out 

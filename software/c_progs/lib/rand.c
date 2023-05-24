@@ -2,6 +2,7 @@
 
 // A simple xorshift, meant to be fast not secure
 static unsigned long state;
+void rand_init(unsigned long seed) { state = seed; }
 unsigned long rand() {
   unsigned long x = state;
   x ^= x << 13;

@@ -128,7 +128,6 @@ module maindec (
                 else
                     outputSignal = 'b000_100_0_00_000_00_0_000_000_00;
             end
-
             // csrrx
             else if ((funct3 == 3'b001) |
                      (funct3 == 3'b010) |
@@ -142,7 +141,9 @@ module maindec (
             else 
                 outputSignal = 'b000_100_0_00_000_00_0_000_000_00;
         end
-
+        // FENCE
+        else if(Op == 'b0001111)
+            outputSignal = 'b000_000_0_00_000_00_0_000_000_00;
         // undefined / illegal instruction
         else 
             outputSignal = 'b000_100_0_00_000_00_0_000_000_00;
@@ -150,6 +151,7 @@ module maindec (
     assign trapReturn = outputSignal[22];
     assign aluSelect = outputSignal[21];
     assign csrWriteEnable = outputSignal[20];
+    //[2]: illegal, [1]:ecall, [0]: ebreak
     assign exceptSignal = outputSignal[19:17];
     assign wArith = outputSignal[16];
     //00: normal, 01: immediate, zero, 10: immediate, PC, 11: PC + 4
