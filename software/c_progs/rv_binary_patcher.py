@@ -26,4 +26,5 @@ with open(f"{UNIT}_patch.s", "w") as f:
     f.write(prog)
 
 # Final assembly
+subp_run(f"rm {UNIT}.s")
 subp_run(f"{TOOLCHAIN}-gcc -c {CC_FLAGS} {UNIT}_patch.s -o {UNIT}.o")

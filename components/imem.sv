@@ -1,9 +1,9 @@
 module imem #(parameter N = 32)(
     input logic[9:0] addr0,
-    input clk,
     output logic[N-1:0] q0
 );
     logic [N - 1:0] rom0 [0 : 1023];
+
     initial begin
         $readmemh("imem_init.txt", rom0);
     end

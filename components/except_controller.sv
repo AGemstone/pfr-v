@@ -12,12 +12,16 @@ module except_controller #(parameter N = 64)
                           output logic[N-1:0] mtvec,
                           output logic[N-1:0] mepc);
     
+    
+     
     // CSR mask
     localparam logic[N-1:0] mie_mask = {{52'b0}, {4'b1000}, {4'b1000}, {4'b1000}};
     localparam logic[N-1:0] mtvec_mask = {{40'b0}, {22'h3fffff}, {2'b0}};
 
     logic[5:0] exceptCode, interruptCode;
     logic [N-1:0] mcauseCode;
+    logic [N-1:0] mepcWrite;
+    
     
     
     // Only support for software breakpoints for now
@@ -47,11 +51,14 @@ module except_controller #(parameter N = 64)
             mepcIn = PC_f
         ...
     */
-
+    assign mepcWrite = exceptCSREnable ?
+                       PC_F: 
+                       ((CSR_addr == 'h341) && CSR_WriteEnable ? CSR_In : '0);
     flopre #(64) mepc_csr (.clk(clk),  
                           .reset(reset),
+                        //   .enable(exceptCSREnable | ((CSR_addr == 'h341) && CSR_WriteEnable)),
                           .enable(exceptCSREnable),
-                          .d(PC_F + 64'h4),
+                          .d(PC_F),
                           .q(mepc));
     
     flopre #(64) mtvec_csr (.clk(clk), 

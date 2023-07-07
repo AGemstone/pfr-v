@@ -54,23 +54,23 @@ module processor_tb();
     begin
       fd = $fopen("./mem.dump", "w");
       for (int j = 0 ; j < 1; j++) begin
-        coprocessorIODataOut = 0; 
-        coprocessorIOAddr = 'h0000; 
-        coprocessorIOControl = 'b00000;
+        coprocessorIODataOut = 1; 
+        coprocessorIOAddr = 'h1000; 
+        coprocessorIOControl = 'b11000;
         SIG_CLOCK_50 = 0; 
         SIG_reset = 1;
-        // #20
-        // coprocessorIOControl = 'b10000;
-        // coprocessorIOAddr = 1;
-        // coprocessorIODataOut = 'h100;
+        #20
+        coprocessorIOControl = 'b10000;
+        coprocessorIOAddr = 1;
+        coprocessorIODataOut = 'h100;
         #20 
         SIG_reset = 0;
-        // #320 
-        // //coprocessorIOControl = 1;
-        // $display ("Internal signal value is %h", processor_tb.dut.dp.DECODE.registers.ram[1]);
-        // #20 
-        // coprocessorIOControl = 0;
-        // $display ("Internal signal value is %h", processor_tb.dut.dp.DECODE.registers.ram[1]);
+        #40 
+        coprocessorIOControl = 1;
+        $display ("Internal signal value is %h", processor_tb.dut.dp.DECODE.registers.ram[1]);
+        #20 
+        coprocessorIOControl = 0;
+        $display ("Internal signal value is %h", processor_tb.dut.dp.DECODE.registers.ram[1]);
         #500000
         $display ("Dumping at %d\n", $time);
         // Memdump
