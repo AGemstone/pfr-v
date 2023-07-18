@@ -1,4 +1,4 @@
-transcript on
+transcript off
 if {[file exists rtl_work]} {
 	vdel -lib rtl_work -all
 }

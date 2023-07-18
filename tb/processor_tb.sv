@@ -54,30 +54,31 @@ module processor_tb();
     begin
       fd = $fopen("./mem.dump", "w");
       for (int j = 0 ; j < 1; j++) begin
-        coprocessorIODataOut = 1; 
+        coprocessorIODataOut = 20; 
         coprocessorIOAddr = 'h1000; 
         coprocessorIOControl = 'b11000;
         SIG_CLOCK_50 = 0; 
         SIG_reset = 1;
         #20
         coprocessorIOControl = 'b10000;
-        coprocessorIOAddr = 1;
+        coprocessorIOAddr = 10;
         coprocessorIODataOut = 'h100;
         #20 
         SIG_reset = 0;
-        #40 
+        #500 
         coprocessorIOControl = 1;
-        $display ("Internal signal value is %h", processor_tb.dut.dp.DECODE.registers.ram[1]);
+        $display ("Internal signal value is %h", processor_tb.dut.dp.DECODE.registers.ram[coprocessorIOAddr[4:0]]);
         #20 
+        coprocessorIODataOut = 'h000;
         coprocessorIOControl = 0;
-        $display ("Internal signal value is %h", processor_tb.dut.dp.DECODE.registers.ram[1]);
-        #500000
+        $display ("Internal signal value is %h", processor_tb.dut.dp.DECODE.registers.ram[coprocessorIOAddr[4:0]]);
+        #40
         $display ("Dumping at %d\n", $time);
         // Memdump
         for(i = 0; i < 4096; i++) begin
           coprocessorIOAddr = i * 8; 
           coprocessorIOControl = 'b00_10_0;
-          #40
+          #20
           $fwrite (fd, "%4d: 0x%x\n", i, coprocessorIODataIn);
         end
         // #20
@@ -101,8 +102,8 @@ module processor_tb();
         //   $fwrite (fd, "%4d: 0x%x\n", i, coprocessorIODataIn);
         // end
 
-
       end
+      // #20
       
       $fclose(fd);
       $stop;

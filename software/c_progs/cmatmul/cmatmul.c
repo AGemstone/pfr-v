@@ -3,10 +3,10 @@
 
 #define N 5
 void matrix_mul(const long *a, const long *b, long *mul) {
-  for (unsigned int i = 0; i < N; i++) {
-    for (unsigned int j = 0; j < N; j++) {
+  for (unsigned long i = 0; i < N; i++) {
+    for (unsigned long j = 0; j < N; j++) {
       mul[i * N + j] = 0;
-      for (unsigned int k = 0; k < N; k++) {
+      for (unsigned long k = 0; k < N; k++) {
         mul[i * N + j] += a[i * N + k] * b[k * N + j];
       }
     }
@@ -22,7 +22,7 @@ int main() {
                    729, 889, 20,  445, 633, 736, 34};
 
   long mul[N * N];
-  for (unsigned int i = 0; i < N * N; i++)
+  for (unsigned long i = 0; i < N * N; i++)
     mul[i] = 1;
   matrix_mul(a, b, mul);
   long pad = mul[0];

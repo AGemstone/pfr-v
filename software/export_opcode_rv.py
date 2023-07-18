@@ -26,7 +26,7 @@ if sys.argv[2][-1] == "s":
     subp_run(f"{TOOLCHAIN}-as {FILEPATH[-1]} {AS_FLAGS}")
 
 elif sys.argv[2][-1] == "c":
-    
+
     ENVIRONMENT["KERNEL"] = FILEPATH[-1][:-2]
     sp.run(["make", "patch"], env=ENVIRONMENT)
     sp.run(["make", "compile"], env=ENVIRONMENT)
@@ -73,12 +73,13 @@ for section in rodata_sections:
 dmem_init.append(":00000001ff")
 dmem_init = "\n".join(dmem_init)
 
+
 # Get .text section
 subp_run(f"{TOOLCHAIN}-objcopy -O binary -j .text a.out text.dat")
 cmd = "hexdump -v -f instr.fmt text.dat"  # Doesn't work with subprocces.run :/
 with sp.Popen(cmd.split(" "), stdout=sp.PIPE, text=True) as p:
     text = p.communicate()[0].strip().split("\n")
-print(text)
+
 # Get patched dissassembly for debugging
 disas = subp_run(f"{TOOLCHAIN}-objdump -d a.out", True).stdout
 print(disas)

@@ -3,4 +3,5 @@ a.out
 *.info
 *.bin
 *.o
+*.dat
 __pycache__
