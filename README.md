@@ -12,3 +12,14 @@ A basic single cycle softcore written in SystemVerilog, tested on a DE0_NANO (ht
 * *software/*: Contains a script that and a few test programs
 * *tb/*: Contains testbenches for simulation
 * *components/*: Contains the design files
+* *de0_nano*: Contains the project files for the used board.
+
+## Synthesis and fault injection using a DE0_NANO
+As an example, a Quartus project is provided such that this project can be used or adapted more easily.
+The steps for testing are as follows:
+* Generate the memory initialization files using the *export_opcode_rv.py* script.
+* Use either the Quartus GUI or CLI to map, fit and assemble such that we generate an *.sof* file.
+* Program the board.
+* Change the current directory to *nios/software/hw/io* subdirectory of the Quartus project
+* Setup the tests by editing the *fault_injection.py* script.
+* Run the script and wait for it to finish. As a result we should have a data.dump file located in the same directory.

@@ -5,3 +5,4 @@ a.out
 *.o
 *.dat
 __pycache__
+results

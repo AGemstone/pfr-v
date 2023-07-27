@@ -1,0 +1,28 @@
+# # File gsaved with Nlview version 6.3.8  2013-12-19 bk=1.2992 VDI=34 GEI=35
+# 
+preplace inst coprocessor.io_riscv_flags -pg 1 -lvl 3 -y 210
+preplace inst coprocessor.NiosII.cpu -pg 1
+preplace inst coprocessor.jtag_uart -pg 1 -lvl 3 -y 110
+preplace inst coprocessor.io_data_low -pg 1 -lvl 3 -y 610
+preplace inst coprocessor.memory -pg 1 -lvl 3 -y 30
+preplace inst coprocessor.clk_0 -pg 1 -lvl 1 -y 90
+preplace inst coprocessor.io_data_high -pg 1 -lvl 3 -y 510
+preplace inst coprocessor.io_addr -pg 1 -lvl 3 -y 310
+preplace inst coprocessor -pg 1 -lvl 1 -y 40 -regy -20
+preplace inst coprocessor.NiosII -pg 1 -lvl 2 -y 90
+preplace inst coprocessor.io_control -pg 1 -lvl 3 -y 410
+preplace inst coprocessor.NiosII.reset_bridge -pg 1
+preplace inst coprocessor.NiosII.clock_bridge -pg 1
+preplace netloc EXPORT<net_container>coprocessor</net_container>(SLAVE)io_control.external_connection,(SLAVE)coprocessor.pio_control) 1 0 3 NJ 440 NJ 440 NJ
+preplace netloc EXPORT<net_container>coprocessor</net_container>(SLAVE)coprocessor.pio_riscv_flags,(SLAVE)io_riscv_flags.external_connection) 1 0 3 NJ 240 NJ 240 NJ
+preplace netloc FAN_OUT<net_container>coprocessor</net_container>(SLAVE)io_addr.clk,(SLAVE)jtag_uart.clk,(MASTER)clk_0.clk,(SLAVE)NiosII.clk,(SLAVE)io_riscv_flags.clk,(SLAVE)memory.clk1,(SLAVE)io_data_high.clk,(SLAVE)io_data_low.clk,(SLAVE)io_control.clk) 1 1 2 340 560 780
+preplace netloc EXPORT<net_container>coprocessor</net_container>(SLAVE)io_data_low.external_connection,(SLAVE)coprocessor.pio_data_low) 1 0 3 NJ 640 NJ 640 NJ
+preplace netloc INTERCONNECT<net_container>coprocessor</net_container>(MASTER)NiosII.instruction_master,(SLAVE)io_control.s1,(SLAVE)io_data_low.s1,(SLAVE)io_riscv_flags.s1,(MASTER)NiosII.data_master,(SLAVE)io_data_high.s1,(SLAVE)jtag_uart.avalon_jtag_slave,(SLAVE)NiosII.debug_mem_slave,(SLAVE)memory.s1,(SLAVE)io_addr.s1) 1 1 2 360 680 720
+preplace netloc EXPORT<net_container>coprocessor</net_container>(SLAVE)io_data_high.external_connection,(SLAVE)coprocessor.pio_data_high) 1 0 3 NJ 540 NJ 540 NJ
+preplace netloc INTERCONNECT<net_container>coprocessor</net_container>(SLAVE)NiosII.reset,(SLAVE)jtag_uart.reset,(SLAVE)io_addr.reset,(SLAVE)io_control.reset,(MASTER)clk_0.clk_reset,(SLAVE)io_data_high.reset,(SLAVE)io_riscv_flags.reset,(SLAVE)memory.reset1,(SLAVE)io_data_low.reset,(MASTER)NiosII.debug_reset_request) 1 1 2 320 660 760
+preplace netloc EXPORT<net_container>coprocessor</net_container>(SLAVE)clk_0.clk_in_reset,(SLAVE)coprocessor.reset) 1 0 1 NJ
+preplace netloc EXPORT<net_container>coprocessor</net_container>(SLAVE)coprocessor.pio_addr,(SLAVE)io_addr.external_connection) 1 0 3 NJ 340 NJ 340 NJ
+preplace netloc POINT_TO_POINT<net_container>coprocessor</net_container>(MASTER)NiosII.irq,(SLAVE)jtag_uart.irq) 1 2 1 740
+preplace netloc EXPORT<net_container>coprocessor</net_container>(SLAVE)clk_0.clk_in,(SLAVE)coprocessor.clk) 1 0 1 NJ
+levelinfo -pg 1 0 110 980
+levelinfo -hier coprocessor 120 150 480 820 970

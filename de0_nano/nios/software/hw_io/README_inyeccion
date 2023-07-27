@@ -1,0 +1,11 @@
+"hello_world_small.c" 
+Es el template para generar programas para el NiosII
+
+"inyection-fault.py" 
+Me genera "inject.c" que se graba en la fpga una vez programada y escribe un
+archivo .dump
+
+"generate_graph.py" 
+Para visualizar los datos generador por "inyection-fault.py"
+
+
