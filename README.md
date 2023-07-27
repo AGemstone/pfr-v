@@ -16,8 +16,12 @@ A basic single cycle softcore written in SystemVerilog, tested on a DE0_NANO (ht
 
 ## Synthesis and fault injection using a DE0_NANO
 As an example, a Quartus project is provided such that this project can be used or adapted more easily.
+The scripts included are designed for Linux and rely on the PATH system variable to be properly set.
+Requirements / dependencies:
+* [RISC-V GCC](https://github.com/riscv-collab/riscv-gnu-toolchain) configured for RV64IA and LP64
+* [Quartus Lite](https://www.intel.com/content/www/us/en/software-kit/660904/intel-quartus-prime-lite-edition-design-software-version-20-1-1-for-linux.html)
 The steps for testing are as follows:
-* Generate the memory initialization files using the *export_opcode_rv.py* script.
+* Generate the memory initialization files using the *export_opcode_rv.py* script. 
 * Use either the Quartus GUI or CLI to map, fit and assemble such that we generate an *.sof* file.
 * Program the board.
 * Change the current directory to *nios/software/hw/io* subdirectory of the Quartus project
