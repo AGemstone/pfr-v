@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 from parse_helpers import *
 import math
 import subprocess as sp
@@ -6,7 +6,7 @@ import sys
 import os
 import numpy as np
 
-TOOLCHAIN = "riscv64-unknown-linux-gnu"
+TOOLCHAIN = "/opt/riscv/bin/riscv64-unknown-elf"
 ENVIRONMENT = os.environ.copy()
 CWD = os.getcwd()
 

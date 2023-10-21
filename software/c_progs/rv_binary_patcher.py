@@ -1,10 +1,10 @@
-#!/bin/python
+#!/bin/python3
 from parse_helpers import *
 import sys
 import os
 CWD = os.getcwd()
 
-TOOLCHAIN = "riscv64-unknown-linux-gnu"
+TOOLCHAIN = "/opt/riscv/bin/riscv64-unknown-elf"
 ENVIRONMENT = os.environ.copy()
 CC_FLAGS = " ".join(sys.argv[2:])
 
