@@ -1,4 +1,4 @@
-TOOLCHAIN=riscv64-unknown-linux-gnu
+TOOLCHAIN=riscv64-unknown-elf
 LIBGCC=/opt/riscv/lib/gcc/riscv64-unknown-elf/12.2.0/libgcc.a
 CC_FLAGS=-mcmodel=medlow -Wall -Wextra -pedantic -ffreestanding -march=rv64i \
 		 -mabi=lp64 -I./lib -g -fstack-usage
@@ -24,7 +24,7 @@ patch:
 	
 compile:
 	$(EXTRALIBS)
-	$(TOOLCHAIN)-as -c entry.s -o entry.o -march=rv64i
+	$(TOOLCHAIN)-as -c entry.s -o entry.o -march=rv64izicsr
 	$(TOOLCHAIN)-ld -T linker.ld $(LD_FLAGS) *.o -o a.out
 
 clean_partial:

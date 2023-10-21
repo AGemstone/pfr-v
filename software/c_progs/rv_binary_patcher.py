@@ -4,7 +4,7 @@ import sys
 import os
 CWD = os.getcwd()
 
-TOOLCHAIN = "riscv64-unknown-linux-gnu"
+TOOLCHAIN = "riscv64-unknown-elf"
 ENVIRONMENT = os.environ.copy()
 CC_FLAGS = " ".join(sys.argv[2:])
 

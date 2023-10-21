@@ -6,7 +6,7 @@ import sys
 import os
 import numpy as np
 
-TOOLCHAIN = "riscv64-unknown-linux-gnu"
+TOOLCHAIN = "riscv64-unknown-elf"
 ENVIRONMENT = os.environ.copy()
 CWD = os.getcwd()
 
