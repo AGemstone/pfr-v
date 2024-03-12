@@ -27,7 +27,7 @@ The scripts included are designed for Linux and rely on the PATH system variable
 * Use either the Quartus GUI or CLI to map, fit and assemble such that we generate an *.sof* file.
 * Program the board.
 * Change the current directory to *nios/software/hw/io* subdirectory of the Quartus project
-* Setup the tests by
+* Setup the tests either by
   * Editing the macros in *inject.c* below the comment /* Injection setup */, running through a terminal the command *nios2-terminal* and downloading the nios2 via GNU Make (**make download-elf**). Alternatively this process can be done in the [Nios2 Eclipse IDE](https://www.intel.com/content/www/us/en/docs/programmable/683525/21-3/installing-eclipse-ide-into-eds.html) instead of a terminal.
-  * Editing which registers and the runs per register that should be tested in *fault_injection.py* script. The delay and bit flipped will be random for each run.
-* Run the script and wait for it to finish. As a result we should have a data.dump file located in the same directory.
+  * Editing which registers and the runs per register that should be tested in *fault_injection.py* script. The delay and bit flipped will be random for each run.* After running the script and waiting for it to finish we should have as a result a *data.dump* file located in the same directory.
+

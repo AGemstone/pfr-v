@@ -5,42 +5,42 @@ if {[file exists rtl_work]} {
 vlib rtl_work
 vmap work rtl_work
 
-vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {/mnt/hdd1/dev/risc/riscv/pfr-v/components/wideXOR.sv}
-vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {/mnt/hdd1/dev/risc/riscv/pfr-v/components/flopre.sv}
-vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {/mnt/hdd1/dev/risc/riscv/pfr-v/components/flopr.sv}
-vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {/mnt/hdd1/dev/risc/riscv/pfr-v/components/memory_stall.sv}
-vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {/mnt/hdd1/dev/risc/riscv/pfr-v/components/core_status.sv}
-vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {/mnt/hdd1/dev/risc/riscv/pfr-v/components/aludec_atomic.sv}
-vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {/mnt/hdd1/dev/risc/riscv/pfr-v/components/atom_alu.sv}
-vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {/mnt/hdd1/dev/risc/riscv/pfr-v/components/csr_dec.sv}
-vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {/mnt/hdd1/dev/risc/riscv/pfr-v/components/interruptDecode.sv}
-vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {/mnt/hdd1/dev/risc/riscv/pfr-v/components/exceptDecode.sv}
-vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {/mnt/hdd1/dev/risc/riscv/pfr-v/components/core.sv}
-vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {/mnt/hdd1/dev/risc/riscv/pfr-v/components/writeback.sv}
-vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {/mnt/hdd1/dev/risc/riscv/pfr-v/components/signext.sv}
-vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {/mnt/hdd1/dev/risc/riscv/pfr-v/components/regfile.sv}
-vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {/mnt/hdd1/dev/risc/riscv/pfr-v/components/memReadMask.sv}
-vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {/mnt/hdd1/dev/risc/riscv/pfr-v/components/memWriteMask.sv}
-vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {/mnt/hdd1/dev/risc/riscv/pfr-v/components/memory.sv}
-vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {/mnt/hdd1/dev/risc/riscv/pfr-v/components/datamemory.sv}
-vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {/mnt/hdd1/dev/risc/riscv/pfr-v/components/maindec.sv}
-vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {/mnt/hdd1/dev/risc/riscv/pfr-v/components/imem.sv}
-vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {/mnt/hdd1/dev/risc/riscv/pfr-v/components/flopre_init.sv}
-vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {/mnt/hdd1/dev/risc/riscv/pfr-v/components/fetch.sv}
-vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {/mnt/hdd1/dev/risc/riscv/pfr-v/components/execute.sv}
-vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {/mnt/hdd1/dev/risc/riscv/pfr-v/components/except_f.sv}
-vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {/mnt/hdd1/dev/risc/riscv/pfr-v/components/except_e.sv}
-vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {/mnt/hdd1/dev/risc/riscv/pfr-v/components/except_controller.sv}
-vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {/mnt/hdd1/dev/risc/riscv/pfr-v/components/decode.sv}
-vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {/mnt/hdd1/dev/risc/riscv/pfr-v/components/datapath.sv}
-vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {/mnt/hdd1/dev/risc/riscv/pfr-v/components/controller.sv}
-vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {/mnt/hdd1/dev/risc/riscv/pfr-v/components/branching.sv}
-vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {/mnt/hdd1/dev/risc/riscv/pfr-v/components/aludec.sv}
-vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {/mnt/hdd1/dev/risc/riscv/pfr-v/components/alu.sv}
+vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {../components/wideXOR.sv}
+vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {../components/flopre.sv}
+vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {../components/flopr.sv}
+vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {../components/memory_stall.sv}
+vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {../components/core_status.sv}
+vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {../components/aludec_atomic.sv}
+vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {../components/atom_alu.sv}
+vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {../components/csr_dec.sv}
+vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {../components/interruptDecode.sv}
+vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {../components/exceptDecode.sv}
+vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {../components/core.sv}
+vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {../components/writeback.sv}
+vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {../components/signext.sv}
+vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {../components/regfile.sv}
+vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {../components/memReadMask.sv}
+vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {../components/memWriteMask.sv}
+vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {../components/memory.sv}
+vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {../components/datamemory.sv}
+vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {../components/maindec.sv}
+vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {../components/imem.sv}
+vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {../components/flopre_init.sv}
+vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {../components/fetch.sv}
+vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {../components/execute.sv}
+vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {../components/except_f.sv}
+vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {../components/except_e.sv}
+vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {../components/except_controller.sv}
+vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {../components/decode.sv}
+vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {../components/datapath.sv}
+vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {../components/controller.sv}
+vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {../components/branching.sv}
+vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {../components/aludec.sv}
+vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/riscv/pfr-v/components {../components/alu.sv}
 vlib coprocessor
 vmap coprocessor coprocessor
 
-vlog -sv -work work +incdir+/mnt/hdd1/dev/risc/de0_nano/../riscv/pfr-v/tb {/mnt/hdd1/dev/risc/de0_nano/../riscv/pfr-v/tb/processor_tb.sv}
+vlog -sv -work work +incdir+../riscv/pfr-v/tb {../tb/processor_tb.sv}
 
 vsim -t 1ps -L altera_ver -L lpm_ver -L sgate_ver -L altera_mf_ver -L altera_lnsim_ver -L cycloneive_ver -L rtl_work -L work -L coprocessor -voptargs="+acc"  processor_tb
 
