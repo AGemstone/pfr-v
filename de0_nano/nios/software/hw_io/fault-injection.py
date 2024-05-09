@@ -32,7 +32,7 @@ def generate_fault_injector(register, data_inject, delay, duration):
 
 def download_elf():
     cwd = os.getcwd()
-    os.chdir("/mnt/hdd1/dev/risc/de0_nano/nios/software/henlo_io")
+    os.chdir("/home/jojo/Documentos/Tesis/pfr-v/de0_nano/nios/software/hw_io")
     sp.call(["make", "download-elf"], stdout=sp.PIPE)
     os.chdir(cwd)
 
@@ -104,11 +104,11 @@ def run_test(register=None, max_duration=None):
     return duration
 
 
-RUN_COUNT = 100
+RUN_COUNT = 2
 registers = range(1, 32)
 # registers.append(0)
 # registers = [1, 2, 3, 8, 10, 11, 12, 13, 14, 15]
-# registers = [1,12,0,15,2]
+# registers = [1,2]
 start_time = datetime.datetime.now()
 
 with open("data.dump", "w") as data_dump:

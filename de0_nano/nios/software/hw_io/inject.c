@@ -8,11 +8,11 @@
 #include <unistd.h>
 
 /* Injection setup */
-#define INJECT_DELAY 8647
+#define INJECT_DELAY 576128
 #define INJECT_ADDRESS 31
 #define INJECT_DATA_LOW 0
-#define INJECT_DATA_HIGH 134217728
-#define PROGRAM_MAX_DURATION 10682
+#define INJECT_DATA_HIGH 524288
+#define PROGRAM_MAX_DURATION 711588
 
 #define HAL_PLATFORM_RESET()                                                   \
   NIOS2_WRITE_STATUS(0);                                                       \

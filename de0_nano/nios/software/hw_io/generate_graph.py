@@ -165,18 +165,18 @@ with open(file_path, "r") as f:
     ax = fig.add_subplot(1, 1, 1)
     ax.set_xlabel("Registers")
     ax.set_ylabel("Error rate")
+    register_results_tally = map(lambda x: (x[0] + 1, sum(x[1]), len(x[1])),
+                                 enumerate(results_by_register))
+    faulty_registers = filter(lambda x: x[0] in critical_registers,
+                              copy.deepcopy(register_results_tally))
+    hist_data = list(map(lambda x: (x[0], 1 - x[1] / x[2]),
+                         copy.deepcopy(faulty_registers)))
     rates = [error_rate for _, error_rate in hist_data]
     labels = [f"x{register}" for register, _ in hist_data]
     ax.bar(labels, rates, color="tab:blue",
            edgecolor="black", align='center', width=1)
     save_path = "/".join(path[:-1])
     fig.savefig(f"{save_path}/histogram.png", bbox_inches="tight")
-    
-
-    register_results_tally = map(lambda x: (x[0] + 1, sum(x[1]), len(x[1])),
-                                 enumerate(results_by_register))
-    faulty_registers = filter(lambda x: x[0] in critical_registers,
-                              copy.deepcopy(register_results_tally))
 
     critical_run_count = sum(list(map(lambda x: x[2],
                                       copy.deepcopy(faulty_registers))))
@@ -189,12 +189,3 @@ with open(file_path, "r") as f:
     total_tally = sum(list(total_tally))
     error_rate = round(1 - total_tally/run_count, 4)
     print(f"Error rate(total): {error_rate}")
-
-    hist_data = list(map(lambda x: (x[0], 1 - x[1] / x[2]),
-                         copy.deepcopy(faulty_registers)))
-
-    
-    
-    
-
-            

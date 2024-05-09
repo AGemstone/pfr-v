@@ -226,4 +226,5 @@ set_global_assignment -name EDA_TEST_BENCH_MODULE_NAME DE0_NANO_tb -section_id D
 set_global_assignment -name EDA_TEST_BENCH_FILE "../tb/processor_tb.sv" -section_id processor_tb
 set_global_assignment -name EDA_TEST_BENCH_FILE "../tb/core_status_tb.sv" -section_id core_status_tb
 set_global_assignment -name EDA_TEST_BENCH_FILE "../tb/DE0_NANO_tb.sv" -section_id DE0_NANO_tb
+
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

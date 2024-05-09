@@ -61,18 +61,18 @@ module processor_tb();
         SIG_reset = 1;
         #20
         coprocessorIOControl = 'b10000;
-        coprocessorIOAddr = 10;
+        coprocessorIOAddr = 0;
         coprocessorIODataOut = 'h100;
         #20 
         SIG_reset = 0;
-        #500 
+        #500  // Time until injection
         coprocessorIOControl = 1;
         $display ("Internal signal value is %h", processor_tb.dut.dp.DECODE.registers.ram[coprocessorIOAddr[4:0]]);
-        #20 
+        #20  // Clock cycle
         coprocessorIODataOut = 'h000;
         coprocessorIOControl = 0;
         $display ("Internal signal value is %h", processor_tb.dut.dp.DECODE.registers.ram[coprocessorIOAddr[4:0]]);
-        #40
+        #40  // Time after injection
         $display ("Dumping at %d\n", $time);
         // Memdump
         for(i = 0; i < 4096; i++) begin
