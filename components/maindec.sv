@@ -152,8 +152,8 @@ module maindec (
     assign aluSelect = outputSignal[21];
     assign csrWriteEnable = outputSignal[20];
     //[2]: illegal, [1]:ecall, [0]: ebreak
-    assign exceptSignal = outputSignal[19:17];
-    assign wArith = outputSignal[16];
+    assign exceptSignal = outputSignal[19:17]; // Not in tesis
+    assign wArith = outputSignal[16]; 
     //00: normal, 01: immediate, zero, 10: immediate, PC, 11: PC + 4
     assign regSel       = outputSignal[15:14];
     assign ALUSrc       = outputSignal[13];

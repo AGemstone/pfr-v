@@ -2,7 +2,7 @@
 
 module datapath #(parameter N = 64, W_CSR = 256)
                 (input logic reset, clk,
-                 input logic [3:0] AluControl,
+                 input logic [3:0] AluControl,  // 0010
                  input logic [2:0] Branch, memWidth,
                  input logic [1:0] regSel, memRead,
                  input logic AluSrc,
@@ -14,7 +14,7 @@ module datapath #(parameter N = 64, W_CSR = 256)
                  input logic csrWriteEnable,
                  input logic trapReturn,
                  input logic trapTrigger,
-                 input logic [31:0] IM_readData,
+                 input logic [31:0] IM_readData, 
                  input logic [N-1:0] DM_readData,
                  input logic [N-1:0] csrOut[0:W_CSR-1],
                  input logic [14:0] coprocessorIOAddr,
@@ -38,10 +38,9 @@ module datapath #(parameter N = 64, W_CSR = 256)
     logic zero_E, overflow_E, sign_E;
     logic [N-1:0] csrRead_D, aluResultAtom0_E, aluResultAtom1_E;
     logic PC_enable;
-	 logic [4:0] rs1, rs2;
 	 logic [95:0] qIF_ID;
-    logic [398:0] qID_EX;
-    logic [391:0] qEX_MEM;
+    logic [319:0] qID_EX;
+    logic [322:0] qEX_MEM;
     logic [132:0] qMEM_WB;
 
     fetch #(N) FETCH(.PCSrc_F(PCSrc),
@@ -52,7 +51,7 @@ module datapath #(parameter N = 64, W_CSR = 256)
                      .trapReturn(trapReturn),
                      .interruptSignal(trapTrigger),
                      .PCBranch_F(PCBranch_E),
-                     .PC_enable(~(|{coprocessorIOControl})),
+                     .PC_enable(1),  // ~(|{coprocessorIOControl}) add later
                      .imem_addr_F(IM_addr));
 
     flopr #(96) IF_ID(.clk(clk),
@@ -76,80 +75,77 @@ module datapath #(parameter N = 64, W_CSR = 256)
                               .csrRead_D(csrRead_D),
                               .readData1_D(readData1_D),
                               .readData2_D(readData2_D),
-                              .readDataDB_D(coprocessorIODataIn),
+                              .readDataDB_D(coprocessorIODataIn),  // Sufijo DB debugging
                               .writeDataDB_D(coprocessorIODataOut),
                               .readRegDB_D (coprocessorIOAddr[4:0]),
                               .writeRegDB_D(coprocessorIOAddr[4:0]),
                               .weDB_D(coprocessorIOControl[0]),
                               .csrAddrDB_D(coprocessorIOAddr[11:0]),
-                              .csrDB_D(coprocessorIOControl[3]),
-										.rs1(rs1),
-										.rs2(rs2));
+                              .csrDB_D(coprocessorIOControl[3]));
 
-	 flopr #(399) ID_EX (.clk(clk),
+	 flopr #(320) ID_EX (.clk(clk),
 	                     .reset(reset),
-								.d({rs2, rs1, qIF_ID[95:32], signImm_D, csrRead_D,
-                            readData1_D, readData2_D, readDataDB_D, qIF_ID[4:0]}), // Preguntar sobre este ultimo
+								.d({qIF_ID[95:32], signImm_D, csrRead_D,
+                            readData1_D, readData2_D}), // Preguntar sobre este ultimo
 								.q(qID_EX));
                                        
     execute #(N) EXECUTE(.AluSrc(AluSrc),
                          .AluControl(AluControl),
-                         .PC_E(qID_EX[388:325]),
+                         .PC_E(qID_EX[319:256]),  // IM_addr
                          .PC4_E(PC_4), // Preguntar origen de registro
                          .regSel1(regSel[1]),
-                         .signImm_E(qID_EX[324:261]),
-                         .readData1_E(qID_EX[196:133]), 
-                         .readData2_E(qID_EX[132:69]), 
+                         .signImm_E(qID_EX[255:192]),  // sign_Imm_D
+                         .readData1_E(qID_EX[127:64]), 
+                         .readData2_E(qID_EX[63:0]), 
                          .PCBranch_E(PCBranch_E), 
-                         .aluResult_E(DM_addr), 
+                         .aluResult_E(DM_addr),
                          .writeData_E(writeData_E),
                          .wArith(wArith),
                          .zero_E(zero_E),
                          .overflow_E(overflow_E),
                          .sign_E(sign_E),
                          .aluSelect(aluSelect),
-                         .CSRRead_E(qID_EX[260:197]),
+                         .CSRRead_E(qID_EX[191:128]),
                          .result1_Atom(aluResultAtom1_E));
 
-	 flopr #(392) EX_MEM (.clk(clk),
+	 flopr #(323) EX_MEM (.clk(clk),
                          .reset(reset), 
-                         .d({qID_EX[132:69], PCBranch_E, PC_4, // Agregar como input al decode
-                             zero_E, overflow_E, sign_E, DM_addr, writeData_E, aluResultAtom1_E, qID_EX[4:0]}),
+                         .d({qID_EX[63:0], PCBranch_E, PC_4, // Agregar como input al decode
+                             DM_addr, aluResultAtom1_E, zero_E, overflow_E, sign_E}),
                          .q(qEX_MEM));	
     
-    except_E eC_E (.DM_addr(qEX_MEM[196:133]),
+    except_E eC_E (.DM_addr(qEX_MEM[130:67]),
                    .memOp({memWrite, memRead[0]}),
                    .memWidth(memWidth),
                    .exceptSignal(exceptSignal_E));
 
     memory #(N) MEMORY(.Branch_E(Branch),
-                       .zero_E(qEX_MEM[199]),
-                       .sign_E(qEX_MEM[197]),
-                       .overflow_E(qEX_MEM[198]),
+                       .zero_E(qEX_MEM[2]),
+                       .sign_E(qEX_MEM[0]),
+                       .overflow_E(qEX_MEM[1]),
                        .PCSrc_W(PCSrc),  // Output para Fetch, no va para el registro
-                       .DM_readData_E(qEX_MEM[391:328]),  // Cambiar por readData2, DM_readData
+                       .DM_readData_E(DM_readData),  // Cambiar por readData2, DM_readData
                        .memWidth(memWidth),
                        .signedRead(memRead[1]),
-                       .byteOffset(qEX_MEM[135:133]),
+                       .byteOffset(qEX_MEM[69:67]),
                        .readDataMasked_M(readDataMasked_M));
 
     assign DM_writeEnable = memWrite;
     assign DM_readEnable = memRead[0];
-    assign DM_writeData = readData2_D;
+    assign DM_writeData = qEX_MEM[322:259]; //readData2_D;  // Cambiar por ID_EX
     assign memWidth_M = memWidth;
 
     assign CSR_addr = qIF_ID[31:20];
     assign CSR_WriteEnable = csrWriteEnable;
-    assign csrIn = aluResultAtom1_E;
+    assign csrIn = qEX_MEM[66:3]; // aluResultAtom1_E;
 
-	 flopr #(133) MEM_WB (.clk(clk),
+	 flopr #(128) MEM_WB (.clk(clk),
                          .reset(reset), 
-                         .d({qEX_MEM[196:133], readDataMasked_M, 
-                             qEX_MEM[4:0]}),
+                         .d({qEX_MEM[130:67], readDataMasked_M}),
                          .q(qMEM_WB));
 
-    writeback #(N) WRITEBACK(.aluResult_W(qMEM_WB[132:69]), 
-                             .DM_readData_W(qMEM_WB[68:5]), 
+    writeback #(N) WRITEBACK(.aluResult_W(qMEM_WB[127:64]), 
+                             .DM_readData_W(qMEM_WB[63:0]), 
                              .memtoReg(memtoReg), 
                              .writeData3_W(writeData3));
 

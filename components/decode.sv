@@ -13,10 +13,9 @@ module decode #(parameter N = 64, W_CSR = 8)
                     input logic[N-1:0] csrOut[0:W_CSR-1],
                     output logic[N-1:0] signImm_D, csrRead_D,
                     output logic[N-1:0] readData1_D, readData2_D,
-                    output logic[N-1:0] readDataDB_D,
-						  output logic [4:0] rs1, rs2);
+                    output logic[N-1:0] readDataDB_D);
     
-    logic[4:0] ra1;  // originalmente rs1
+    logic[4:0] rs1;
     logic[N-1:0] writeData3;
     logic[N-1:0] signImm;
     logic[N-1:0] jalrAddr;
@@ -25,7 +24,7 @@ module decode #(parameter N = 64, W_CSR = 8)
     regfile	registers(.clk(clk), 
                       .we3(regWrite_D | weDB_D), 
                       .wa3(weDB_D ? writeRegDB_D : instr_D[11:7]), 
-                      .ra1(ra1), 
+                      .ra1(rs1), 
                       .ra2(instr_D[24:20]), 
                       .wd3(weDB_D ? writeMaskDBOut : writeData3), 
                       .rd1(readData1_D), 
@@ -46,15 +45,11 @@ module decode #(parameter N = 64, W_CSR = 8)
 
     // Early write of return address
     assign writeData3 = (&{Branch[2:0]}) ? PC_4 : writeData3_D;
-    assign ra1 = regSel0 ? 5'b0: instr_D[19:15];
+    assign rs1 = regSel0 ? 5'b0: instr_D[19:15];
 
     // Coprocessor signals
     assign readDataDB_D = csrDB_D ? csrRead_D : readRegDataDB;
     wideXOR bitflip(.a(readRegDataDB),
                     .mask(writeDataDB_D),
                     .y(writeMaskDBOut));
-
-	assign rs1 = ra1;
-	assign rs2 = instr_D[24:20];
 endmodule
-
