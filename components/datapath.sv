@@ -45,8 +45,7 @@ module datapath #(parameter N = 64, W_CSR = 256)
     logic [330:0] qEX_MEM;
     logic [129:0] qMEM_WB;
 	 
-	 
-	 assign controlMux = ControlEnable ? 
+	 assign controlMux = 1 ?  // ControlEnable
                         {AluSrc, AluControl, 
                          Branch, memRead, memWrite, regWrite, memtoReg} :
                         'b0;
