@@ -10,6 +10,7 @@ module decode #(parameter N = 64, W_CSR = 8)
                     input logic[N-1:0] writeDataDB_D,
                     input logic[N-1:0] writeData3_D, PC_4,
                     input logic[31:0] instr_D,
+						  input logic[4:0] wa3_D,
                     input logic[N-1:0] csrOut[0:W_CSR-1],
                     output logic[N-1:0] signImm_D, csrRead_D,
                     output logic[N-1:0] readData1_D, readData2_D,
@@ -23,7 +24,7 @@ module decode #(parameter N = 64, W_CSR = 8)
     
     regfile	registers(.clk(clk), 
                       .we3(regWrite_D | weDB_D), 
-                      .wa3(weDB_D ? writeRegDB_D : instr_D[11:7]), 
+                      .wa3(weDB_D ? writeRegDB_D : wa3_D), // instr_D[11:7]),  // bits del registro
                       .ra1(rs1), 
                       .ra2(instr_D[24:20]), 
                       .wd3(weDB_D ? writeMaskDBOut : writeData3), 
