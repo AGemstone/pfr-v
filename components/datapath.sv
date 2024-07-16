@@ -106,7 +106,7 @@ module datapath #(parameter N = 64, W_CSR = 256)
                          .readData1_E(qID_EX[132:69]), 
                          .readData2_E(qID_EX[68:5]), 
                          .PCBranch_E(PCBranch_E), 
-                         .aluResult_E(DM_addr),
+                         .aluResult_E(aluResult_E),
                          .writeData_E(writeData_E),
                          .wArith(wArith),
                          .zero_E(zero_E),
@@ -119,7 +119,7 @@ module datapath #(parameter N = 64, W_CSR = 256)
 	 flopr #(336) EX_MEM (.clk(clk),
                          .reset(reset), 
                          .d({qID_EX[332:325], qID_EX[68:5], PCBranch_E, PC_4, // Agregar como input al decode
-                             DM_addr, aluResultAtom1_E, zero_E, overflow_E, sign_E,
+                             aluResult_E, aluResultAtom1_E, zero_E, overflow_E, sign_E,
 									  qID_EX[4:0]}),
                          .q(qEX_MEM));	
     
@@ -142,7 +142,8 @@ module datapath #(parameter N = 64, W_CSR = 256)
     assign DM_writeEnable = qEX_MEM[330]; // memWrite;
     assign DM_readEnable = qEX_MEM[331]; // memRead[0];
     assign DM_writeData = qEX_MEM[327:264]; //readData2_D;  // Cambiar por ID_EX
-    assign memWidth_M = memWidth;
+    assign DM_addr = qEX_MEM[135:72];
+	 assign memWidth_M = memWidth;
 
     assign CSR_addr = qIF_ID[31:20];
     assign CSR_WriteEnable = csrWriteEnable;
