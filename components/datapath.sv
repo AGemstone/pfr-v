@@ -43,21 +43,21 @@ module datapath #(parameter N = 64, W_CSR = 256)
 	 logic [95:0] qIF_ID;
     logic [337:0] qID_EX;
     logic [335:0] qEX_MEM;
-    logic [134:0] qMEM_WB;
+    logic [135:0] qMEM_WB;
 	 
 	 assign controlMux = 1 ?  // ControlEnable
                         {AluSrc, AluControl, 
                          Branch, memRead, memWrite, regWrite, memtoReg} :
                         'b0;
 
-    fetch #(N) FETCH(.PCSrc_F(PCSrc),
+    fetch #(N) FETCH(.PCSrc_F(qMEM_WB[135]),  //PCSrc
                      .clk(clk),
                      .reset(reset),
                      .PC_TrapTrigger({{csrOut[3][N-1:2]}, {2'b0}}),
                      .PC_TrapReturn(csrOut[4]),
                      .trapReturn(trapReturn),
                      .interruptSignal(trapTrigger),
-                     .PCBranch_F(qEX_MEM[258:195]), // PCBranch_E
+                     .PCBranch_F(qEX_MEM[263:200]), // PCBranch_E
                      .PC_enable(1),  // ~(|{coprocessorIOControl}) add later
                      .imem_addr_F(IM_addr));
 
@@ -149,9 +149,9 @@ module datapath #(parameter N = 64, W_CSR = 256)
     assign CSR_WriteEnable = csrWriteEnable;
     assign csrIn = qEX_MEM[71:8]; // aluResultAtom1_E;
 
-	 flopr #(135) MEM_WB (.clk(clk),
+	 flopr #(136) MEM_WB (.clk(clk),
                          .reset(reset), 
-                         .d({qEX_MEM[329:328], qEX_MEM[135:72], readDataMasked_M, qEX_MEM[4:0]}),
+                         .d({PCSrc, qEX_MEM[329:328], qEX_MEM[135:72], readDataMasked_M, qEX_MEM[4:0]}),
                          .q(qMEM_WB));
 
     writeback #(N) WRITEBACK(.aluResult_W(qMEM_WB[132:69]), 
