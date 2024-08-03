@@ -40,17 +40,17 @@ module datapath #(parameter N = 64, W_CSR = 256)
     logic [N-1:0] csrRead_D, aluResultAtom0_E, aluResultAtom1_E;
     logic PC_enable;
 	 logic [12:0] controlMux;
-	 logic [95:0] qIF_ID;
+	 logic [108:0] qIF_ID;
     logic [337:0] qID_EX;
     logic [335:0] qEX_MEM;
-    logic [135:0] qMEM_WB;
+    logic [134:0] qMEM_WB;
 	 
 	 assign controlMux = 1 ?  // ControlEnable
                         {AluSrc, AluControl, 
                          Branch, memRead, memWrite, regWrite, memtoReg} :
                         'b0;
 
-    fetch #(N) FETCH(.PCSrc_F(qMEM_WB[135]),  //PCSrc
+    fetch #(N) FETCH(.PCSrc_F(PCSrc),  //PCSrc
                      .clk(clk),
                      .reset(reset),
                      .PC_TrapTrigger({{csrOut[3][N-1:2]}, {2'b0}}),
@@ -61,9 +61,9 @@ module datapath #(parameter N = 64, W_CSR = 256)
                      .PC_enable(1),  // ~(|{coprocessorIOControl}) add later
                      .imem_addr_F(IM_addr));
 
-    flopr #(96) IF_ID(.clk(clk),
+    flopr #(109) IF_ID(.clk(clk),
 							 .reset(reset),
-							 .d({IM_addr, IM_readData}),
+							 .d({controlMux, IM_addr, IM_readData}),
 							 .q(qIF_ID));
     
     except_F eC_F(.PC(qIF_ID[95:32]),
@@ -93,7 +93,7 @@ module datapath #(parameter N = 64, W_CSR = 256)
 
 	 flopr #(338) ID_EX (.clk(clk),
 	                     .reset(reset),
-								.d({controlMux, qIF_ID[95:32], signImm_D, csrRead_D,
+								.d({qIF_ID[108:96], qIF_ID[95:32], signImm_D, csrRead_D,
                             readData1_D, readData2_D, qIF_ID[11:7]}), // Preguntar sobre este ultimo
 								.q(qID_EX));
                                        
@@ -133,7 +133,7 @@ module datapath #(parameter N = 64, W_CSR = 256)
                        .sign_E(qEX_MEM[5]),
                        .overflow_E(qEX_MEM[6]),
                        .PCSrc_W(PCSrc),  // Output para Fetch, no va para el registro
-                       .DM_readData_E(DM_readData),  // Cambiar por readData2, DM_readData
+                       .DM_readData_E(DM_readData),
                        .memWidth(memWidth),
                        .signedRead(qEX_MEM[332]),  //memRead[1]
                        .byteOffset(qEX_MEM[74:72]),
@@ -149,13 +149,13 @@ module datapath #(parameter N = 64, W_CSR = 256)
     assign CSR_WriteEnable = csrWriteEnable;
     assign csrIn = qEX_MEM[71:8]; // aluResultAtom1_E;
 
-	 flopr #(136) MEM_WB (.clk(clk),
+	 flopr #(135) MEM_WB (.clk(clk),
                          .reset(reset), 
-                         .d({PCSrc, qEX_MEM[329:328], qEX_MEM[135:72], readDataMasked_M, qEX_MEM[4:0]}),
+                         .d({qEX_MEM[329:328], qEX_MEM[135:72], readDataMasked_M, qEX_MEM[4:0]}),
                          .q(qMEM_WB));
 
     writeback #(N) WRITEBACK(.aluResult_W(qMEM_WB[132:69]), 
-                             .DM_readData_W(qMEM_WB[68:5]), 
+                             .DM_readData_W(readDataMasked_M), // (qMEM_WB[68:5]), 
                              .memtoReg(qMEM_WB[133]),   // memtoReg
                              .writeData3_W(writeData3));
 
