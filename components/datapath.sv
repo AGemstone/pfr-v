@@ -43,7 +43,7 @@ module datapath #(parameter N = 64, W_CSR = 256)
 	 logic [108:0] qIF_ID;
     logic [337:0] qID_EX;
     logic [335:0] qEX_MEM;
-    logic [134:0] qMEM_WB;
+    logic [138:0] qMEM_WB;
 	 
 	 assign controlMux = 1 ?  // ControlEnable
                         {AluSrc, AluControl, 
@@ -132,12 +132,8 @@ module datapath #(parameter N = 64, W_CSR = 256)
                        .zero_E(qEX_MEM[7]),
                        .sign_E(qEX_MEM[5]),
                        .overflow_E(qEX_MEM[6]),
-                       .PCSrc_W(PCSrc),  // Output para Fetch, no va para el registro
-                       .DM_readData_E(DM_readData),
-                       .memWidth(memWidth),
-                       .signedRead(qEX_MEM[332]),  //memRead[1]
-                       .byteOffset(qEX_MEM[74:72]),
-                       .readDataMasked_M(readDataMasked_M));
+                       .PCSrc_W(PCSrc));  // Output para Fetch, no va para el registro
+                       // );
 
     assign DM_writeEnable = qEX_MEM[330]; // memWrite;
     assign DM_readEnable = qEX_MEM[331]; // memRead[0];
@@ -149,15 +145,19 @@ module datapath #(parameter N = 64, W_CSR = 256)
     assign CSR_WriteEnable = csrWriteEnable;
     assign csrIn = qEX_MEM[71:8]; // aluResultAtom1_E;
 
-	 flopr #(135) MEM_WB (.clk(clk),
+	 flopr #(139) MEM_WB (.clk(clk),
                          .reset(reset), 
-                         .d({qEX_MEM[329:328], qEX_MEM[135:72], readDataMasked_M, qEX_MEM[4:0]}),
+                         .d({qEX_MEM[332], qEX_MEM[74:72], qEX_MEM[329:328], qEX_MEM[135:72], readDataMasked_M, qEX_MEM[4:0]}),
                          .q(qMEM_WB));
 
     writeback #(N) WRITEBACK(.aluResult_W(qMEM_WB[132:69]), 
-                             .DM_readData_W(readDataMasked_M), // (qMEM_WB[68:5]), 
+                             // .DM_readData_W(readDataMasked_M), // (qMEM_WB[68:5]), 
                              .memtoReg(qMEM_WB[133]),   // memtoReg
-                             .writeData3_W(writeData3));
+                             .writeData3_W(writeData3),
+									  .DM_readData_W(DM_readData),
+                             .memWidth(memWidth),
+                             .signedRead(qMEM_WB[138]),  //memRead[1]
+                             .byteOffset(qMEM_WB[137:135]));
 
     assign breakSrc = {exceptSignal_E[6], exceptSignal_F[3]};
 endmodule
