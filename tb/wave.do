@@ -37,6 +37,11 @@ vlog -sv -work work /home/jojo/Documentos/Tesis/pfr-v/components/controller.sv
 vlog -sv -work work /home/jojo/Documentos/Tesis/pfr-v/components/branching.sv
 vlog -sv -work work /home/jojo/Documentos/Tesis/pfr-v/components/aludec.sv
 vlog -sv -work work /home/jojo/Documentos/Tesis/pfr-v/components/alu.sv
+vlog -sv -work work /home/jojo/Documentos/Tesis/pfr-v/components/forwarding.sv
+vlog -sv -work work /home/jojo/Documentos/Tesis/pfr-v/components/hazard.sv
+vlog -sv -work work /home/jojo/Documentos/Tesis/pfr-v/components/mux3.sv
+
+
 vlib coprocessor
 vmap coprocessor coprocessor
 
