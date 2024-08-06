@@ -64,13 +64,14 @@ module datapath #(parameter N = 64, W_CSR = 256)
                      .trapReturn(trapReturn),
                      .interruptSignal(trapTrigger),
                      .PCBranch_F(qEX_MEM[263:200]), // PCBranch_E
-                     .PC_enable(1),  // ~(|{coprocessorIOControl}) add later
+                     .PC_enable(PCEnable),  // ~(|{coprocessorIOControl}) add later
                      .imem_addr_F(IM_addr));
 
-    flopr #(109) IF_ID(.clk(clk),
-							 .reset(reset),
-							 .d({controlMux, IM_addr, IM_readData}),
-							 .q(qIF_ID));
+    flopre #(109) IF_ID(.clk(clk),
+							   .enable(IF_ID_writeEnable),
+							   .reset(reset),
+							   .d({controlMux, IM_addr, IM_readData}),
+							   .q(qIF_ID));
     
     except_F eC_F(.PC(qIF_ID[95:32]),
                   .iAlign(1'b0),
@@ -153,16 +154,16 @@ module datapath #(parameter N = 64, W_CSR = 256)
 	 mux3 FWA (.s(fwA),
               .d0(qID_EX[132:69]), // readData1_E
               .d1(writeData3),
-              .d2(qEX_MEM[132:69]),  // aluResult_E
+              .d2(qEX_MEM[135:72]),  // aluResult_E
               .y(fwA_out));
 
     mux3 FWB (.s(fwB),
              .d0(qID_EX[68:5]),  // Done readData2_E
              .d1(writeData3),
-             .d2(qEX_MEM[132:69]), // aluResult_E
+             .d2(qEX_MEM[135:72]), // aluResult_E
              .y(fwB_out));
 
-    hazard HDU (.ID_EX_MemRead(qID_EX[328]),  // Done
+    hazard HDU (.ID_EX_MemRead(qID_EX[329]),  // Done
                 .ID_EX_RegisterRd(qID_EX[4:0]),  // Done
                 .IF_ID_RegisterRs1(rs1),  // Arreglar decode para que tenga este output 
                 .IF_ID_RegisterRs2(rs2),

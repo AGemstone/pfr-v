@@ -54,6 +54,11 @@ add wave -noupdate -divider {Signals}
 add wave {/processor_tb/SIG_*}
 add wave -noupdate -divider {Data Mem}
 add wave -radix hexadecimal {/processor_tb/DM_*}
+add wave -noupdate -divider {HDU signals}
+add wave -noupdate -label {hazard} /processor_tb/dut/dp/hazard
+add wave -noupdate -label {IF_ID_writeEnable} /processor_tb/dut/dp/IF_ID_writeEnable
+add wave -noupdate -label {PCEnable} /processor_tb/dut/dp/PCEnable
+add wave -noupdate -label {ControlEnable} /processor_tb/dut/dp/ControlEnable
 add wave -noupdate -divider {Coprocessor}
 add wave -radix hexadecimal {/processor_tb/coprocessor*}
 add wave -noupdate -divider {Program Status Registers}
