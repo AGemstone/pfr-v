@@ -22,6 +22,7 @@ module decode #(parameter N = 64, W_CSR = 8)
     logic[N-1:0] signImm;
     logic[N-1:0] jalrAddr;
     logic[N-1:0] readRegDataDB, readCSRDataDB, csrReadMux, writeMaskDBOut;
+	 logic[N-1:0] readData1_internal, readData2_internal;
     
     regfile	registers(.clk(clk), 
                       .we3(regWrite_D | weDB_D), 
@@ -29,8 +30,8 @@ module decode #(parameter N = 64, W_CSR = 8)
                       .ra1(rs1_internal), 
                       .ra2(instr_D[24:20]), 
                       .wd3(weDB_D ? writeMaskDBOut : writeData3), 
-                      .rd1(readData1_D), 
-                      .rd2(readData2_D),
+                      .rd1(readData1_internal), 
+                      .rd2(readData2_internal),
                       .ra_db(readRegDB_D),
                       .rd_db(readRegDataDB));
 
@@ -48,6 +49,10 @@ module decode #(parameter N = 64, W_CSR = 8)
     // Early write of return address
     assign writeData3 = (&{Branch[2:0]}) ? PC_4 : writeData3_D;
     assign rs1_internal = regSel0 ? 5'b0: instr_D[19:15];
+	 
+	 // Forwarding logic
+    assign readData1_D = (rs1_internal == wa3_D) ? writeData3 : readData1_internal;
+    assign readData2_D = (instr_D[24:20] == wa3_D) ? writeData3 : readData2_internal;
 	 
 	 // Assign internal signals to output ports
     assign rs1 = rs1_internal;
