@@ -1,7 +1,7 @@
 module hazard (
-    input logic ID_EX_MemRead,
+    input logic ID_EX_MemRead, PCSrc,
     input logic[4:0] ID_EX_RegisterRd, IF_ID_RegisterRs1, IF_ID_RegisterRs2,
-    output logic PCEnable, ControlEnable, IF_ID_writeEnable,
+    output logic PCEnable, ControlEnable, IF_ID_writeEnable, IF_ID_reset,
     output logic[1:0] cnt
 );
     logic [1:0] counter = 0;
@@ -18,7 +18,10 @@ module hazard (
                 ControlEnable = 1'b1;
                 IF_ID_writeEnable = 1'b1;
         end
+		  
+		  // Agregar caso del branch agregar else if
         
     assign cnt = counter;
+	 assign IF_ID_reset = PCSrc;
 
 endmodule

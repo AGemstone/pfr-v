@@ -5,24 +5,28 @@ module decode #(parameter N = 64, W_CSR = 8)
                     input logic[2:0] Branch,
                     input logic regSel0,
                     input logic weDB_D, csrDB_D,
+						  input logic AluSrc,
                     input logic[11:0] csrAddrDB_D,
                     input logic[4:0] readRegDB_D, writeRegDB_D,
                     input logic[N-1:0] writeDataDB_D,
-                    input logic[N-1:0] writeData3_D, PC_4,
+                    input logic[N-1:0] writeData3_D, PC_4, PC_D,
                     input logic[31:0] instr_D,
 						  input logic[4:0] wa3_D,
                     input logic[N-1:0] csrOut[0:W_CSR-1],
                     output logic[N-1:0] signImm_D, csrRead_D,
                     output logic[N-1:0] readData1_D, readData2_D,
                     output logic[N-1:0] readDataDB_D,
-						  output logic[4:0] rs1, rs2);
+						  output logic[4:0] rs1, rs2,
+						  output logic[N-1:0] PCBranch_D,
+						  output logic PCSrc_D);
     
     logic[4:0] rs1_internal;
     logic[N-1:0] writeData3;
-    logic[N-1:0] signImm;
+    logic[N-1:0] signImm, signedImm_PC;
     logic[N-1:0] jalrAddr;
     logic[N-1:0] readRegDataDB, readCSRDataDB, csrReadMux, writeMaskDBOut;
 	 logic[N-1:0] readData1_internal, readData2_internal;
+	 logic PCSrc;
     
     regfile	registers(.clk(clk), 
                       .we3(regWrite_D | weDB_D), 
@@ -57,6 +61,26 @@ module decode #(parameter N = 64, W_CSR = 8)
 	 // Assign internal signals to output ports
     assign rs1 = rs1_internal;
     assign rs2 = instr_D[24:20];
+	 
+	 // Branch signals
+	 assign signedImm_PC = (signImm_D << 1);
+    assign PCBranch_D  = AluSrc ? {signImm_D[N-1:1],1'b0} : signedImm_PC + PC_D;
+	 
+	 always_comb begin
+	     case (Branch)
+		      3'b001: PCSrc = (readData1_D == readData2_D);
+				3'b011: PCSrc = (readData1_D != readData2_D);
+				3'b001: PCSrc = (readData1_D == readData2_D);
+				3'b101: PCSrc = ($signed(readData1_D) < $signed(readData2_D));
+            3'b100: PCSrc = ($signed(readData1_D) >= $signed(readData2_D));
+				3'b110: PCSrc = (readData1_D < readData2_D);   // BLTU
+            3'b010: PCSrc = (readData1_D >= readData2_D);  // BGEU
+            3'b111: PCSrc = 1'b1;  // Branch unconditionally
+				default: PCSrc = 1'b0;
+			endcase
+	 end
+	 
+	 assign PCSrc_D = PCSrc;
 
     // Coprocessor signals
     assign readDataDB_D = csrDB_D ? csrRead_D : readRegDataDB;

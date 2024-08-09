@@ -35,7 +35,8 @@ module datapath #(parameter N = 64, W_CSR = 256)
 					  output logic IF_ID_writeEnable);
                     
     logic PCSrc;
-    logic [N-1:0] PCBranch_E, PC_4, aluResult_E, writeData_E, writeData3; 
+	 logic PCSrc_no;
+    logic [N-1:0] PCBranch_E, PCBranch_D, PC_4, aluResult_E, writeData_E, writeData3; 
     logic [N-1:0] signImm_D, readData1_D, readData2_D;
     logic [N-1:0] readDataMasked_M, Mask_writeData;
     logic zero_E, overflow_E, sign_E;
@@ -47,7 +48,7 @@ module datapath #(parameter N = 64, W_CSR = 256)
 	 logic [12:0] controlMux;
 	 logic [N-1:0] fwA_out,fwB_out;
 	 logic [108:0] qIF_ID;
-    logic [347:0] qID_EX;
+    logic [413:0] qID_EX;
     logic [335:0] qEX_MEM;
     logic [138:0] qMEM_WB;
 	 
@@ -56,20 +57,20 @@ module datapath #(parameter N = 64, W_CSR = 256)
                          Branch, memRead, memWrite, regWrite, memtoReg} :
                         'b0;
 
-    fetch #(N) FETCH(.PCSrc_F(PCSrc),  //PCSrc
+    fetch #(N) FETCH(.PCSrc_F(qID_EX[412]),  //PCSrc
                      .clk(clk),
                      .reset(reset),
                      .PC_TrapTrigger({{csrOut[3][N-1:2]}, {2'b0}}),
                      .PC_TrapReturn(csrOut[4]),
                      .trapReturn(trapReturn),
                      .interruptSignal(trapTrigger),
-                     .PCBranch_F(qEX_MEM[263:200]), // PCBranch_E
+                     .PCBranch_F(qID_EX[411: 348]), // PCBranch_D), // qEX_MEM[263:200]), // PCBranch_E
                      .PC_enable(PCEnable),  // ~(|{coprocessorIOControl}) add later
                      .imem_addr_F(IM_addr));
 
     flopre #(109) IF_ID(.clk(clk),
 							   .enable(IF_ID_writeEnable),
-							   .reset(reset),
+							   .reset(reset | IF_ID_reset),
 							   .d({controlMux, IM_addr, IM_readData}),
 							   .q(qIF_ID));
     
@@ -79,8 +80,10 @@ module datapath #(parameter N = 64, W_CSR = 256)
 
     decode #(N, W_CSR) DECODE(.regWrite_D(qMEM_WB[134]),  // regWrite Output MEM_WB
                               .clk(clk),
-                              .Branch(Branch),
+                              .Branch(qIF_ID[103:101]),// Branch),
                               .PC_4(qEX_MEM[199:136]),
+										.PC_D(qIF_ID[95:32]),  // IM_addr
+										.AluSrc(qIF_ID[108]),
                               .writeData3_D(writeData3),  // Output de writeback
                               .regSel0(regSel[0]),
                               .instr_D(qIF_ID[31:0]),
@@ -98,11 +101,13 @@ module datapath #(parameter N = 64, W_CSR = 256)
                               .csrAddrDB_D(coprocessorIOAddr[11:0]),
                               .csrDB_D(coprocessorIOControl[3]),
 										.rs1(rs1),
-										.rs2(rs2));
+										.rs2(rs2),
+										.PCBranch_D(PCBranch_D),
+										.PCSrc_D(PCSrc));
 
-	 flopr #(348) ID_EX (.clk(clk),
+	 flopr #(413) ID_EX (.clk(clk),
 	                     .reset(reset),
-								.d({rs2, rs1, qIF_ID[108:96], qIF_ID[95:32], signImm_D, csrRead_D,
+								.d({PCSrc, PCBranch_D, rs2, rs1, qIF_ID[108:96], qIF_ID[95:32], signImm_D, csrRead_D,
                             readData1_D, readData2_D, qIF_ID[11:7]}), // Preguntar sobre este ultimo
 								.q(qID_EX));
                                        
@@ -114,7 +119,7 @@ module datapath #(parameter N = 64, W_CSR = 256)
                          .signImm_E(qID_EX[260:197]),  // sign_Imm_D
                          .readData1_E(fwA_out), 
                          .readData2_E(fwB_out), 
-                         .PCBranch_E(PCBranch_E), 
+                         .PCBranch_E(PCBranch_E),  // REMOVE
                          .aluResult_E(aluResult_E),
                          .writeData_E(writeData_E),
                          .wArith(wArith),
@@ -141,7 +146,7 @@ module datapath #(parameter N = 64, W_CSR = 256)
                        .zero_E(qEX_MEM[7]),
                        .sign_E(qEX_MEM[5]),
                        .overflow_E(qEX_MEM[6]),
-                       .PCSrc_W(PCSrc));  // Output para Fetch, no va para el registro
+                       .PCSrc_W(PCSrc_no));  // Output para Fetch, no va para el registro
 
     forwarding FORWARDING (.EX_MEM_RegWrite(qEX_MEM[329]),  // Done
                            .MEM_WB_RegWrite(qMEM_WB[134]),  // Done
@@ -167,9 +172,11 @@ module datapath #(parameter N = 64, W_CSR = 256)
                 .ID_EX_RegisterRd(qID_EX[4:0]),  // Done
                 .IF_ID_RegisterRs1(rs1),  // Arreglar decode para que tenga este output 
                 .IF_ID_RegisterRs2(rs2),
+					 .PCSrc(qID_EX[412]),
                 .ControlEnable(ControlEnable),
                 .PCEnable(PCEnable),
-                .IF_ID_writeEnable(IF_ID_writeEnable)
+                .IF_ID_writeEnable(IF_ID_writeEnable),
+				    .IF_ID_reset(IF_ID_reset)	 // output IF_ID_reset
                 );
 
     assign DM_writeEnable = qEX_MEM[330]; // memWrite;
