@@ -65,7 +65,8 @@ for section in rodata_sections:
     # Proper initialization of data memory
     for i in range(len(rodata)):
         index = address + i
-        record = f"08{hex(index)[2:]:0>4}00{rodata[i]}"
+        # record = f"08{hex(index)[2:]:0>4}00{rodata[i]}"
+        record = f"08{hex(index)[2:]:0>4}00123456789abcdef0"
         checksum = map(lambda a: int(f"0x{a}", 16),
                        [record[i:i+2] for i in range(0, len(record), 2)])
         checksum = sum(checksum)

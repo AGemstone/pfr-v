@@ -909,6 +909,8 @@ endif
 
 .PHONY : download-elf
 download-elf : $(call adjust-path,$(ELF))
+	@echo "DOWNLOAD=$(DOWNLOAD)"
+	@echo "ELF=$(ELF)"
 	@if [ "$(DOWNLOAD)" = "none" ]; \
 	then \
 		$(ECHO) Downloading $(ELF) not supported; \

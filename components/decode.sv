@@ -13,6 +13,8 @@ module decode #(parameter N = 64, W_CSR = 8)
                     input logic[31:0] instr_D,
 						  input logic[4:0] wa3_D,
                     input logic[N-1:0] csrOut[0:W_CSR-1],
+						  input logic [1:0] fwA_Br, fwB_Br,
+						  input logic[N-1:0] fwA_D, fwB_D,
                     output logic[N-1:0] signImm_D, csrRead_D,
                     output logic[N-1:0] readData1_D, readData2_D,
                     output logic[N-1:0] readDataDB_D,
@@ -26,6 +28,7 @@ module decode #(parameter N = 64, W_CSR = 8)
     logic[N-1:0] jalrAddr;
     logic[N-1:0] readRegDataDB, readCSRDataDB, csrReadMux, writeMaskDBOut;
 	 logic[N-1:0] readData1_internal, readData2_internal;
+	 logic[N-1:0] readData1_Br, readData2_Br;
 	 logic PCSrc;
     
     regfile	registers(.clk(clk), 
@@ -58,6 +61,9 @@ module decode #(parameter N = 64, W_CSR = 8)
     assign readData1_D = (rs1_internal == wa3_D && wa3_D != 5'b0) ? writeData3 : readData1_internal;
     assign readData2_D = (instr_D[24:20] == wa3_D && wa3_D != 5'b0) ? writeData3 : readData2_internal;
 	 
+	 assign readData1_Br = (fwA_Br != 2'b0 && Branch != 3'b0) ? fwA_D : readData1_D;
+	 assign readData2_Br = (fwB_Br != 2'b0 && Branch != 3'b0) ? fwB_D : readData2_D;
+	 
 	 // Assign internal signals to output ports
     assign rs1 = rs1_internal;
     assign rs2 = instr_D[24:20];
@@ -68,13 +74,12 @@ module decode #(parameter N = 64, W_CSR = 8)
 	 
 	 always_comb begin
 	     case (Branch)
-		      3'b001: PCSrc = (readData1_D == readData2_D);
-				3'b011: PCSrc = (readData1_D != readData2_D);
-				3'b001: PCSrc = (readData1_D == readData2_D);
-				3'b101: PCSrc = ($signed(readData1_D) < $signed(readData2_D));
-            3'b100: PCSrc = ($signed(readData1_D) >= $signed(readData2_D));
-				3'b110: PCSrc = (readData1_D < readData2_D);   // BLTU
-            3'b010: PCSrc = (readData1_D >= readData2_D);  // BGEU
+		      3'b001: PCSrc = (readData1_Br == readData2_Br);
+				3'b011: PCSrc = (readData1_Br != readData2_Br);
+				3'b101: PCSrc = ($signed(readData1_Br) < $signed(readData2_Br));
+            3'b100: PCSrc = ($signed(readData1_Br) >= $signed(readData2_Br));
+				3'b110: PCSrc = (readData1_Br < readData2_Br);   // BLTU
+            3'b010: PCSrc = (readData1_Br >= readData2_Br);  // BGEU
             3'b111: PCSrc = 1'b1;  // Branch unconditionally
 				default: PCSrc = 1'b0;
 			endcase
