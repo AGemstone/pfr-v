@@ -7,8 +7,8 @@
    <irq preferredWidth="34" />
   </columns>
  </systemtable>
- <library expandedCategories="Library,Project" />
- <window width="1920" height="1046" x="0" y="17" />
+ <library expandedCategories="Project,Library" />
+ <window width="1920" height="1046" x="0" y="27" />
  <generation path="nios/" />
  <hdlexample language="VERILOG" />
 </preferences>

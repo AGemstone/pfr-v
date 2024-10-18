@@ -11,7 +11,7 @@
 #define INJECT_DELAY 12
 #define INJECT_ADDRESS 0
 #define INJECT_DATA_LOW 0
-#define INJECT_DATA_HIGH 4
+#define INJECT_DATA_HIGH 2
 #define PROGRAM_MAX_DURATION 4294967295
 
 #define HAL_PLATFORM_RESET()                                                   \

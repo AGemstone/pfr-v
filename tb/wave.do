@@ -104,6 +104,30 @@ add wave -noupdate -label {GPR t3 / x28} -radix hexadecimal {/processor_tb/dut/d
 add wave -noupdate -label {GPR t4 / x29} -radix hexadecimal {/processor_tb/dut/dp/DECODE/registers/ram[29]}
 add wave -noupdate -label {GPR t5 / x30} -radix hexadecimal {/processor_tb/dut/dp/DECODE/registers/ram[30]}
 add wave -noupdate -label {GPR t6 / x31} -radix hexadecimal {/processor_tb/dut/dp/DECODE/registers/ram[31]}
+add wave -noupdate -divider {Fetch Registers}
+add wave -noupdate -label {PCBranch_F} -radix hexadecimal {/processor_tb/dut/dp/FETCH/PCBranch_F}
+add wave -noupdate -label {PCSrc_F} {/processor_tb/dut/dp/FETCH/PCSrc_F}
+add wave -noupdate -label {imem_addr_F} -radix hexadecimal {/processor_tb/dut/dp/FETCH/imem_addr_F}
+add wave -noupdate -divider {Decode Registers}
+add wave -noupdate -label {regWrite_D} {/processor_tb/dut/dp/DECODE/regWrite_D}
+add wave -noupdate -label {Branch} {/processor_tb/dut/dp/DECODE/Branch}
+add wave -noupdate -label {PC_4} -radix hexadecimal {/processor_tb/dut/dp/DECODE/PC_4}
+add wave -noupdate -label {PC_D} -radix hexadecimal {/processor_tb/dut/dp/DECODE/PC_D}
+add wave -noupdate -label {writeData3_D} -radix hexadecimal {/processor_tb/dut/dp/DECODE/writeData3_D}
+add wave -noupdate -label {wa3_D} -radix unsigned {/processor_tb/dut/dp/DECODE/wa3_D}
+add wave -noupdate -label {fwA_Br} {/processor_tb/dut/dp/DECODE/fwA_Br}
+add wave -noupdate -label {fwB_Br} {/processor_tb/dut/dp/DECODE/fwB_Br}
+add wave -noupdate -label {fwA_D} -radix hexadecimal {/processor_tb/dut/dp/DECODE/fwA_D}
+add wave -noupdate -label {fwB_D} -radix hexadecimal {/processor_tb/dut/dp/DECODE/fwB_D}
+add wave -noupdate -label {readData1_D} -radix hexadecimal {/processor_tb/dut/dp/DECODE/readData1_D}
+add wave -noupdate -label {readData2_D} -radix hexadecimal {/processor_tb/dut/dp/DECODE/readData2_D}
+add wave -noupdate -label {readDataDB_D} -radix hexadecimal {/processor_tb/dut/dp/DECODE/readDataDB_D}
+add wave -noupdate -label {rs1} -radix unsigned {/processor_tb/dut/dp/DECODE/rs1}
+add wave -noupdate -label {rs2} -radix unsigned {/processor_tb/dut/dp/DECODE/rs2}
+add wave -noupdate -divider {Execute Registers}
+
+
+
 
 view structure
 view signals

@@ -68,7 +68,7 @@ module processor_tb();
         // coprocessorIODataOut = 'h100;
         #20 
         SIG_reset = 0;
-        #10000  // Time until injection
+        #1000000  // Time until injection
         // coprocessorIOControl = 1;
         $display ("Internal signal value is %h", processor_tb.dut.dp.DECODE.registers.ram[coprocessorIOAddr[4:0]]);
         #20  // Clock cycle

@@ -14,19 +14,24 @@ module hazard (
                 ControlEnable = 1'b0;
                 IF_ID_writeEnable = 1'b0;
         end
-		  else if (IF_ID_Branch != 3'b0 &
-		           ((ID_EX_RegisterRd == IF_ID_RegisterRs1) |
-                 (ID_EX_RegisterRd == IF_ID_RegisterRs2))) begin
-				         PCEnable = 1'b0;
-                     ControlEnable = 1'b0;
-                     IF_ID_writeEnable = 1'b0;
-		  end
-		  else if (IF_ID_Branch != 3'b0 &
-		           ((EX_MEM_RegisterRd == IF_ID_RegisterRs1) |
-                 (EX_MEM_RegisterRd == IF_ID_RegisterRs2))) begin
-				         PCEnable = 1'b0;
-                     ControlEnable = 1'b0;
-                     IF_ID_writeEnable = 1'b0;
+		  // else if (IF_ID_Branch != 3'b0 &
+		  //          ((ID_EX_RegisterRd == IF_ID_RegisterRs1) |
+        //          (ID_EX_RegisterRd == IF_ID_RegisterRs2))) begin
+		  // 	            PCEnable = 1'b0;
+        //              ControlEnable = 1'b0;
+        //              IF_ID_writeEnable = 1'b0;
+		  // end
+		  // else if (IF_ID_Branch != 3'b0 &
+		  //          ((EX_MEM_RegisterRd == IF_ID_RegisterRs1) |
+        //          (EX_MEM_RegisterRd == IF_ID_RegisterRs2))) begin
+		  //              PCEnable = 1'b0;
+        //              ControlEnable = 1'b0;
+        //              IF_ID_writeEnable = 1'b0;
+		  // end
+		  else if (IF_ID_Branch != 3'b0) begin
+		          PCEnable = 1'b0;
+                ControlEnable = 1'b0;
+                IF_ID_writeEnable = 1'b0;
 		  end
         else begin
                 PCEnable = 1'b1;

@@ -3,8 +3,8 @@
 module datapath #(parameter N = 64, W_CSR = 256)
                 (input logic reset, clk,
                  input logic [3:0] AluControl,  // 0010
-                 input logic [2:0] Branch, memWidth,
-                 input logic [1:0] regSel, memRead,
+                 input logic [2:0] Branch, memWidth, // Add memWidth
+                 input logic [1:0] regSel, memRead,  // Trying to ad regSel to the controlMux
                  input logic AluSrc,
                  input logic memWrite,
                  input logic regWrite,	
@@ -15,14 +15,14 @@ module datapath #(parameter N = 64, W_CSR = 256)
                  input logic trapReturn,
                  input logic trapTrigger,
                  input logic [31:0] IM_readData, 
-                 input logic [N-1:0] DM_readData,
+                 input logic [N-1:0] DM_readData, // Add
                  input logic [N-1:0] csrOut[0:W_CSR-1],
                  input logic [14:0] coprocessorIOAddr,
                  input logic [4:0] coprocessorIOControl,
                  input logic [N-1:0] coprocessorIODataOut,
                  output logic [N-1:0] coprocessorIODataIn,
                  output logic [N-1:0] csrIn,
-                 output logic [N-1:0] IM_addr, DM_addr, DM_writeData,
+                 output logic [N-1:0] IM_addr, DM_addr, DM_writeData,  // IM_addr add logic
                  output logic [11:0] CSR_addr,
                  output logic DM_writeEnable, DM_readEnable,
                  output logic CSR_WriteEnable,
@@ -45,15 +45,15 @@ module datapath #(parameter N = 64, W_CSR = 256)
     logic PC_enable;
 	 logic [1:0] fwA, fwB;
 	 logic [4:0] rs1, rs2;
-	 logic [12:0] controlMux;
+	 logic [19:0] controlMux;
 	 logic [N-1:0] fwA_out,fwB_out;
-	 logic [108:0] qIF_ID;
-    logic [413:0] qID_EX;
-    logic [399:0] qEX_MEM;
-    logic [138:0] qMEM_WB;
+	 logic [115:0] qIF_ID;
+    logic [418:0] qID_EX;
+    logic [402:0] qEX_MEM;
+    logic [141:0] qMEM_WB;
 	 
 	 assign controlMux = ControlEnable ?  // ControlEnable
-                        {AluSrc, AluControl, 
+                        {memWidth, wArith, aluSelect, regSel, AluSrc, AluControl, 
                          Branch, memRead, memWrite, regWrite, memtoReg} :
                         'b0;
 
@@ -68,7 +68,7 @@ module datapath #(parameter N = 64, W_CSR = 256)
                      .PC_enable(PCEnable),  // ~(|{coprocessorIOControl}) add later
                      .imem_addr_F(IM_addr));
 
-    flopre #(109) IF_ID(.clk(clk),
+    flopre #(116) IF_ID(.clk(clk),
 							   .enable(IF_ID_writeEnable),
 							   .reset(reset | IF_ID_reset),
 							   .d({controlMux, IM_addr, IM_readData}),
@@ -85,7 +85,7 @@ module datapath #(parameter N = 64, W_CSR = 256)
 										.PC_D(qIF_ID[95:32]),  // IM_addr
 										.AluSrc(qIF_ID[108]),
                               .writeData3_D(writeData3),  // Output de writeback
-                              .regSel0(regSel[0]),
+                              .regSel0(regSel[0]),  // regSel[0]
                               .instr_D(qIF_ID[31:0]),
 										.wa3_D(qMEM_WB[4:0]),
                               .signImm_D(signImm_D),
@@ -109,10 +109,10 @@ module datapath #(parameter N = 64, W_CSR = 256)
 										.PCBranch_D(PCBranch_D),
 										.PCSrc_D(PCSrc));
 
-	 flopr #(413) ID_EX (.clk(clk),
+	 flopr #(419) ID_EX (.clk(clk),
 								// .enable(ID_EX_writeEnable),
 	                     .reset(reset),
-								.d({PCSrc, PCBranch_D, rs2, rs1, qIF_ID[108:96], qIF_ID[95:32], signImm_D, csrRead_D,
+								.d({qIF_ID[115:110], PCSrc, PCBranch_D, rs2, rs1, qIF_ID[108:96], qIF_ID[95:32], signImm_D, csrRead_D,
                             readData1_D, readData2_D, qIF_ID[11:7]}), // Preguntar sobre este ultimo
 								.q(qID_EX));
                                        
@@ -120,24 +120,24 @@ module datapath #(parameter N = 64, W_CSR = 256)
                          .AluControl(qID_EX[336:333]), // AluControl
                          .PC_E(qID_EX[324:261]),  // IM_addr
                          .PC4_E(PC_4), // Preguntar origen de registro
-                         .regSel1(regSel[1]),
+                         .regSel1(qID_EX[413]), // regSel[1]
                          .signImm_E(qID_EX[260:197]),  // sign_Imm_D
                          .readData1_E(fwA_out), 
                          .readData2_E(fwB_out), 
                          .PCBranch_E(PCBranch_E),  // REMOVE
                          .aluResult_E(aluResult_E),
                          .writeData_E(writeData_E),
-                         .wArith(wArith),
+                         .wArith(qID_EX[415]),  // wArith
                          .zero_E(zero_E),
                          .overflow_E(overflow_E),
                          .sign_E(sign_E),
-                         .aluSelect(aluSelect),
+                         .aluSelect(qID_EX[414]),  // aluSelect
                          .CSRRead_E(qID_EX[196:133]),
                          .result1_Atom(aluResultAtom1_E));
 
-	 flopr #(400) EX_MEM (.clk(clk),
+	 flopr #(403) EX_MEM (.clk(clk),
                          .reset(reset),
-                         .d({fwB_out, qID_EX[332:325], qID_EX[68:5], PCBranch_E, PC_4, // Agregar como input al decode
+                         .d({qID_EX[418:416], fwB_out, qID_EX[332:325], qID_EX[68:5], PCBranch_E, PC_4, // Agregar como input al decode
                              aluResult_E, aluResultAtom1_E, zero_E, overflow_E, sign_E,
 									  qID_EX[4:0]}),
                          .q(qEX_MEM));	
@@ -192,15 +192,15 @@ module datapath #(parameter N = 64, W_CSR = 256)
     assign DM_readEnable = qEX_MEM[331]; // memRead[0];
     assign DM_writeData = qEX_MEM[399:336]; //readData2_D;  // FwBOut por registro
     assign DM_addr = qEX_MEM[135:72];
-	 assign memWidth_M = memWidth;
+	 assign memWidth_M = qEX_MEM[402:400];
 
     assign CSR_addr = qIF_ID[31:20];
     assign CSR_WriteEnable = csrWriteEnable;
     assign csrIn = qEX_MEM[71:8]; // aluResultAtom1_E;
 
-	 flopr #(139) MEM_WB (.clk(clk),
+	 flopr #(142) MEM_WB (.clk(clk),
                          .reset(reset), 
-                         .d({qEX_MEM[332], qEX_MEM[74:72], qEX_MEM[329:328], qEX_MEM[135:72], readDataMasked_M, qEX_MEM[4:0]}),
+                         .d({qEX_MEM[402:400], qEX_MEM[332], qEX_MEM[74:72], qEX_MEM[329:328], qEX_MEM[135:72], readDataMasked_M, qEX_MEM[4:0]}),
                          .q(qMEM_WB));
 
     writeback #(N) WRITEBACK(.aluResult_W(qMEM_WB[132:69]), 
@@ -208,7 +208,7 @@ module datapath #(parameter N = 64, W_CSR = 256)
                              .memtoReg(qMEM_WB[133]),   // memtoReg
                              .writeData3_W(writeData3),
 									  .DM_readData_W(DM_readData),
-                             .memWidth(memWidth),
+                             .memWidth(qMEM_WB[141:139]),  //memWidth
                              .signedRead(qMEM_WB[138]),  //memRead[1]
                              .byteOffset(qMEM_WB[137:135]));
 
