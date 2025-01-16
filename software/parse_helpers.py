@@ -7,17 +7,17 @@ def subp_run(cmd, capture_output=False):
 
 def instr_patch(instr):
     patch = ""
-    if instr[:2] in ["ld", "lw", "lh", "lb"]:
-        opcode, args = instr.split()
-        args = args.split(",")
+    # if instr[:2] in ["ld", "lw", "lh", "lb"]:
+    #     opcode, args = instr.split()
+    #     args = args.split(",")
 
-        if(args[0] in args[1]):
-            #using an unlikely to be used register
-            patch += f"mv t6, {args[0]}\n"
-            args[1] = args[1].replace(args[0],"t6")
-            instr = f"{opcode}\t{args[0]}, {args[1]}"
+    #     if(args[0] in args[1]):
+    #         #using an unlikely to be used register
+    #         patch += f"mv t6, {args[0]}\n"
+    #         args[1] = args[1].replace(args[0],"t6")
+    #         instr = f"{opcode}\t{args[0]}, {args[1]}"
         
-        patch += f"{instr}\n"
+    #     patch += f"{instr}\n"
     patch += f"{instr}\n"
     return patch
 

@@ -54,7 +54,8 @@ module decode #(parameter N = 64, W_CSR = 8)
     assign signImm_D = instr_D[6:0] == 7'b1100111 ? readData1_D + signImm : signImm;
 
     // Early write of return address
-    assign writeData3 = (&{Branch[2:0]}) ? PC_4 : writeData3_D;
+    // assign writeData3 = (&{Branch[2:0]}) ? PC_4 : writeData3_D;
+	 assign writeData3 = writeData3_D;
     assign rs1_internal = regSel0 ? 5'b0: instr_D[19:15];
 	 
 	 // Forwarding logic

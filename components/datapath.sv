@@ -57,7 +57,7 @@ module datapath #(parameter N = 64, W_CSR = 256)
                          Branch, memRead, memWrite, regWrite, memtoReg} :
                         'b0;
 
-    fetch #(N) FETCH(.PCSrc_F(qID_EX[412]),  //PCSrc
+    fetch #(N) FETCH(.PCSrc_F(qID_EX[412]),  // Intentar pasar directo de decode, hay latencia
                      .clk(clk),
                      .reset(reset),
                      .PC_TrapTrigger({{csrOut[3][N-1:2]}, {2'b0}}),
@@ -78,16 +78,16 @@ module datapath #(parameter N = 64, W_CSR = 256)
                   .iAlign(1'b0),
                   .exceptSignal(exceptSignal_F));
 
-    decode #(N, W_CSR) DECODE(.regWrite_D(qMEM_WB[134]),  // regWrite Output MEM_WB
+    decode #(N, W_CSR) DECODE(.regWrite_D(qMEM_WB[70]),  // regWrite Output MEM_WB
                               .clk(clk),
                               .Branch(qIF_ID[103:101]),// Branch),
                               .PC_4(qEX_MEM[199:136]),
 										.PC_D(qIF_ID[95:32]),  // IM_addr
 										.AluSrc(qIF_ID[108]),
                               .writeData3_D(writeData3),  // Output de writeback
-                              .regSel0(regSel[0]),  // regSel[0]
+                              .regSel0(qIF_ID[109]),  // regSel[0]
                               .instr_D(qIF_ID[31:0]),
-										.wa3_D(qMEM_WB[4:0]),
+										.wa3_D(qMEM_WB[4:0]), // No distingue entre instrucciones jal ? registro del fetch : 
                               .signImm_D(signImm_D),
                               .csrOut(csrOut),
                               .csrRead_D(csrRead_D),
@@ -128,6 +128,7 @@ module datapath #(parameter N = 64, W_CSR = 256)
                          .aluResult_E(aluResult_E),
                          .writeData_E(writeData_E),
                          .wArith(qID_EX[415]),  // wArith
+								 .PCSrc(qID_EX[412]),
                          .zero_E(zero_E),
                          .overflow_E(overflow_E),
                          .sign_E(sign_E),
@@ -154,7 +155,7 @@ module datapath #(parameter N = 64, W_CSR = 256)
                        .PCSrc_W(PCSrc_no));  // Output para Fetch, no va para el registro
 
     forwarding FORWARDING (.EX_MEM_RegWrite(qEX_MEM[329]),  // Done
-                           .MEM_WB_RegWrite(qMEM_WB[134]),  // Done
+                           .MEM_WB_RegWrite(qMEM_WB[70]),  // Done
                            .EX_MEM_RegisterRd(qEX_MEM[4:0]),  // Done
                            .MEM_WB_RegisterRd(qMEM_WB[4:0]),  // Done
                            .ID_EX_RegisterRs1(qID_EX[342:338]), // Done
@@ -181,7 +182,8 @@ module datapath #(parameter N = 64, W_CSR = 256)
 					 .EX_MEM_RegisterRd(qEX_MEM[4:0]),
                 .IF_ID_RegisterRs1(rs1),  // Arreglar decode para que tenga este output 
                 .IF_ID_RegisterRs2(rs2),
-					 .PCSrc(qID_EX[412]),
+					 .ID_EX_PCSrc(qID_EX[412]),
+					 .PCSrc(PCSrc),
                 .ControlEnable(ControlEnable),
                 .PCEnable(PCEnable),
                 .IF_ID_writeEnable(IF_ID_writeEnable),
@@ -200,17 +202,17 @@ module datapath #(parameter N = 64, W_CSR = 256)
 
 	 flopr #(142) MEM_WB (.clk(clk),
                          .reset(reset), 
-                         .d({qEX_MEM[402:400], qEX_MEM[332], qEX_MEM[74:72], qEX_MEM[329:328], qEX_MEM[135:72], readDataMasked_M, qEX_MEM[4:0]}),
+                         .d({DM_readData, qEX_MEM[402:400], qEX_MEM[332], qEX_MEM[74:72], qEX_MEM[329:328], qEX_MEM[135:72], qEX_MEM[4:0]}),
                          .q(qMEM_WB));
 
-    writeback #(N) WRITEBACK(.aluResult_W(qMEM_WB[132:69]), 
+    writeback #(N) WRITEBACK(.aluResult_W(qMEM_WB[68:5]), 
                              // .DM_readData_W(readDataMasked_M), // (qMEM_WB[68:5]), 
-                             .memtoReg(qMEM_WB[133]),   // memtoReg
+                             .memtoReg(qMEM_WB[69]),   // memtoReg
                              .writeData3_W(writeData3),
-									  .DM_readData_W(DM_readData),
-                             .memWidth(qMEM_WB[141:139]),  //memWidth
-                             .signedRead(qMEM_WB[138]),  //memRead[1]
-                             .byteOffset(qMEM_WB[137:135]));
+									  .DM_readData_W(DM_readData),// qMEM_WB[141:78]), // DM_readData
+                             .memWidth(qMEM_WB[77:75]),  //memWidth
+                             .signedRead(qMEM_WB[74]),  //memRead[1]
+                             .byteOffset(qMEM_WB[73:71]));
 
     assign breakSrc = {exceptSignal_E[6], exceptSignal_F[3]};
 	 assign fwA_db = fwA;

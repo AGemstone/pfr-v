@@ -21,7 +21,10 @@ prog = None
 with open(f"{UNIT}.s", "r") as f:
     prog = map(lambda a: a.strip(), f.read().split("\n"))
     prog = filter(lambda a: a != "", prog)
+    # prog = "".join(prog)
+    # print(list(prog))
     prog = "".join(map(instr_patch, prog))
+
 with open(f"{UNIT}_patch.s", "w") as f:
     f.write(prog)
 

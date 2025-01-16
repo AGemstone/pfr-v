@@ -1,5 +1,5 @@
 module hazard (
-    input logic ID_EX_MemRead, PCSrc,
+    input logic ID_EX_MemRead, PCSrc, ID_EX_PCSrc,
 	 input logic[2:0] IF_ID_Branch,
     input logic[4:0] ID_EX_RegisterRd, IF_ID_RegisterRs1, IF_ID_RegisterRs2, EX_MEM_RegisterRd,
     output logic PCEnable, ControlEnable, IF_ID_writeEnable, IF_ID_reset,
@@ -14,10 +14,15 @@ module hazard (
                 ControlEnable = 1'b0;
                 IF_ID_writeEnable = 1'b0;
         end
+		  else if (IF_ID_Branch != 3'b0 & PCSrc == 1'b1) begin
+		          PCEnable = 1'b0;
+                ControlEnable = 1'b0;
+                IF_ID_writeEnable = 1'b0;
+		  end
 		  // else if (IF_ID_Branch != 3'b0 &
 		  //          ((ID_EX_RegisterRd == IF_ID_RegisterRs1) |
-        //          (ID_EX_RegisterRd == IF_ID_RegisterRs2))) begin
-		  // 	            PCEnable = 1'b0;
+        //           (ID_EX_RegisterRd == IF_ID_RegisterRs2))) begin
+		  //  	         PCEnable = 1'b0;
         //              ControlEnable = 1'b0;
         //              IF_ID_writeEnable = 1'b0;
 		  // end
@@ -28,11 +33,6 @@ module hazard (
         //              ControlEnable = 1'b0;
         //              IF_ID_writeEnable = 1'b0;
 		  // end
-		  else if (IF_ID_Branch != 3'b0) begin
-		          PCEnable = 1'b0;
-                ControlEnable = 1'b0;
-                IF_ID_writeEnable = 1'b0;
-		  end
         else begin
                 PCEnable = 1'b1;
                 ControlEnable = 1'b1;
@@ -42,6 +42,6 @@ module hazard (
 		  // Agregar caso del branch agregar else if
         
     assign cnt = counter;
-	 assign IF_ID_reset = PCSrc;
+	 assign IF_ID_reset = ID_EX_PCSrc;
 
 endmodule

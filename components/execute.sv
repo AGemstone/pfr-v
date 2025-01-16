@@ -3,14 +3,14 @@ module execute #(
 ) (
     input logic [N-1: 0] PC_E, readData1_E, readData2_E, signImm_E,
     input logic [N-1: 0] CSRRead_E,
-    input logic AluSrc, regSel1, wArith, aluSelect,
+    input logic AluSrc, regSel1, wArith, aluSelect, PCSrc,
     input logic[3:0] AluControl,
     output logic [N-1: 0] writeData_E, aluResult_E, PCBranch_E, PC4_E,
     output logic [N-1: 0] result1_Atom,
     output logic zero_E, overflow_E, sign_E
 );
     logic[N-1: 0] readData1, readData2, signedImm_PC, aluResult;
-    logic[N-1: 0] aluResultNormal, aluResultAtomic;
+    logic[N-1: 0] aluResultNormal, aluResultAtomic, aluResult_Aux;
 
     // alternative to using a mux here is add another alu
     alu #(N) alu(.a(wArith ? {{32'b0}, readData1[31:0]} : readData1), 
@@ -31,7 +31,9 @@ module execute #(
     assign aluResultNormal = wArith ? 
                             {{32{aluResult[31]}}, aluResult[(N/2)-1:0]} :
                             aluResult;
-    assign aluResult_E = aluSelect ? aluResultAtomic : aluResultNormal;
+    assign aluResult_Aux = aluSelect ? aluResultAtomic : aluResultNormal;
+	 
+	 assign aluResult_E = PCSrc ? PC_E + 'd4 : aluResult_Aux;
     
     assign writeData_E = readData2_E;
     assign readData1 = regSel1 ? PC_E : readData1_E;
