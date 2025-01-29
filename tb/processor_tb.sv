@@ -54,36 +54,36 @@ module processor_tb();
     begin
       fd = $fopen("./mem.dump", "w");
       for (int j = 0 ; j < 1; j++) begin
-        // coprocessorIODataOut = 20;
-        // coprocessorIOAddr = 'h1000; 
-        // coprocessorIOControl = 'b11000;
+        // coprocessorIODataOut = 20;  // Comment to disable fault injection
+        // coprocessorIOAddr = 'h1000;  // Comment to disable fault injection 
+        // coprocessorIOControl = 'b11000;  // Comment to disable fault injection
         coprocessorIODataOut = 0;
         coprocessorIOAddr = 0;
         coprocessorIOControl = 0;
         SIG_CLOCK_50 = 0; 
         SIG_reset = 1;
         #20
-        // coprocessorIOControl = 'b10000;
-        // coprocessorIOAddr = 0;
-        // coprocessorIODataOut = 'h100;
+        // coprocessorIOControl = 'b10000;  // Comment to disable fault injection
+        // coprocessorIOAddr = 0;  // Comment to disable fault injection
+        // coprocessorIODataOut = 'h100;  // Comment to disable fault injection
         #20 
         SIG_reset = 0;
-        #1000000  // Time until injection
-        // coprocessorIOControl = 1;
+        #50000  // Time until injection  // Comment to disable fault injection
+        // coprocessorIOControl = 1;  // Comment to disable fault injection
         $display ("Internal signal value is %h", processor_tb.dut.dp.DECODE.registers.ram[coprocessorIOAddr[4:0]]);
         #20  // Clock cycle
-        // coprocessorIODataOut = 'h000;
-        // coprocessorIOControl = 0;
+        // coprocessorIODataOut = 'h000;  // Comment to disable fault injection
+        // coprocessorIOControl = 0;  // Comment to disable fault injection
         $display ("Internal signal value is %h", processor_tb.dut.dp.DECODE.registers.ram[coprocessorIOAddr[4:0]]);
         #40  // Time after injection
         $display ("Dumping at %d\n", $time);
         // Memdump
-        // for(i = 0; i < 4096; i++) begin
-        //   coprocessorIOAddr = i * 8; 
-        //   coprocessorIOControl = 'b00_10_0;
-        //   #20
-        //   $fwrite (fd, "%4d: 0x%x\n", i, coprocessorIODataIn);
-        // end
+        // for(i = 0; i < 4096; i++) begin  // Comment to disable fault injection
+        //   coprocessorIOAddr = i * 8;   // Comment to disable fault injection
+        //   coprocessorIOControl = 'b00_10_0;  // Comment to disable fault injection
+        //   #20  // Comment to disable fault injection
+        //   $fwrite (fd, "%4d: 0x%x\n", i, coprocessorIODataIn);  // Comment to disable fault injection
+        // end  // Comment to disable fault injection
         // #20
         // $fwrite (fd, "After Clear\n");
         // $display ("Clearing at %d\n", $time);

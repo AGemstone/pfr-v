@@ -23,8 +23,6 @@ _start:
     sw x7, 0(x15)     # Store word x7 into memory at address in x15 (result = 30)
     lw x16, 0(x15)    # Load word from memory into x16 (x16 = 30)
     # li x16, 30
-    nop 
-    nop
     # Control flow instructions
     beq x7, x16, equal_label   # Branch if x7 == x16 (will branch)
     

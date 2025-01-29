@@ -180,6 +180,7 @@ module datapath #(parameter N = 64, W_CSR = 256)
 					 .IF_ID_Branch(qIF_ID[103:101]),
                 .ID_EX_RegisterRd(qID_EX[4:0]),  // Done
 					 .EX_MEM_RegisterRd(qEX_MEM[4:0]),
+					 .MEM_WB_RegisterRd(qMEM_WB[4:0]),
                 .IF_ID_RegisterRs1(rs1),  // Arreglar decode para que tenga este output 
                 .IF_ID_RegisterRs2(rs2),
 					 .ID_EX_PCSrc(qID_EX[412]),

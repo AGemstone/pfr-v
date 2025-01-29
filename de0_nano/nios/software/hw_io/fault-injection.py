@@ -89,7 +89,7 @@ def run_test(register=None, max_duration=None):
             flipped_bit = random.randint(0, 63)
             data_flip = 1 << flipped_bit
             delay = random.randint(12, max_delay)
-            # generate_fault_injector(register, data_flip, delay, max_duration)
+            generate_fault_injector(register, data_flip, delay, max_duration)
             download_elf()
             line = proc.stdout.readline().decode("utf-8")
             duration = int(line.split(",")[5].split(":")[1].split("||")[0], 16)
@@ -104,7 +104,7 @@ def run_test(register=None, max_duration=None):
     return duration
 
 
-RUN_COUNT = 2
+RUN_COUNT = 100
 registers = range(1, 32)
 # registers.append(0)
 # registers = [1, 2, 3, 8, 10, 11, 12, 13, 14, 15]

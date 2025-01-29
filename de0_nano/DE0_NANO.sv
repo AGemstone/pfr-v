@@ -52,7 +52,7 @@ module DE0_NANO (input logic [1:0] KEY,
     
 
     core #(64) core0(.clk(clk),
-                     .reset(~KEY[1]),// nios2IOControl[0] | ~KEY[1]), TODO: CHANGE LATER
+                     .reset(nios2IOControl[0] | ~KEY[1]),
                      .DM_readData(DM_readData),
                      .DM_writeData(DM_writeData),
                      .DM_addr(DM_addr),
