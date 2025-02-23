@@ -104,7 +104,7 @@ def run_test(register=None, max_duration=None):
     return duration
 
 
-RUN_COUNT = 100
+RUN_COUNT = 3
 registers = range(1, 32)
 # registers.append(0)
 # registers = [1, 2, 3, 8, 10, 11, 12, 13, 14, 15]

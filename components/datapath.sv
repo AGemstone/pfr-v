@@ -145,7 +145,7 @@ module datapath #(parameter N = 64, W_CSR = 256)
     
     except_E eC_E (.DM_addr(qEX_MEM[135:72]),
                    .memOp({qEX_MEM[330], qEX_MEM[331]}),  //{memWrite, memRead[0]}
-                   .memWidth(memWidth),
+                   .memWidth(qEX_MEM[402:400]),
                    .exceptSignal(exceptSignal_E));
 
     memory #(N) MEMORY(.Branch_E(qEX_MEM[335:333]),  // Branch
