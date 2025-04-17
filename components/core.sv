@@ -28,6 +28,7 @@ module core #(parameter N = 64)
     // Exception signals 
     logic[3:0] exceptSignal_F;
     logic[2:0] exceptSignal_D;
+	 logic[2:0] exceptSignal_D_aux;
     logic[6:0] exceptSignal_E;
     logic[15:0] exceptSignal;
     logic[15:0] interruptSignal;
@@ -37,10 +38,13 @@ module core #(parameter N = 64)
     localparam W_CSR = 6;
     logic[N-1:0] csrOut[0:W_CSR-1];
     logic[N-1:0] csrIn;
+	 logic[N-1:0] csrIn_D;
     logic[N-1:0] cyclesIn;
     logic[11:0] CSR_addr;
+	 logic[11:0] CSR_addr_D;
     logic csrWriteEnable;
     logic CSR_WriteEnable;
+	 logic CSR_WriteEnable_D;
 
     // Coprocessor aux
     logic[N-1:0] cycleStall_flagOut;
@@ -58,10 +62,10 @@ module core #(parameter N = 64)
 
     core_status status(.trapTrigger(trapTrigger),
                        .trapReturn(trapReturn),
-                       .mstatusCSREnable((CSR_addr == 'h300) & CSR_WriteEnable),
+                       .mstatusCSREnable(((CSR_addr_D == 'h300) & CSR_WriteEnable_D) | | exceptSignal_D_aux[2]),
                        .clk(clk),
                        .reset(reset),
-                       .csrIn(csrIn),
+                       .csrIn(csrIn_D),
                        .currentMode(privMode),
                        .mstatus(csrOut[1]));
     
@@ -112,7 +116,7 @@ module core #(parameter N = 64)
                  .breakSrc(breakSrc[2]),
                  .trapReturn(trapReturn),
                  .csrWriteEnable(csrWriteEnable),
-                 .exceptSignal_D(exceptSignal_D),
+                 .exceptSignal_D(exceptSignal_D_aux),
                  .memWrite(memWrite),
                  .privMode(privMode),
                  .coprocessorStall((|{cycleStall, coprocessorIOControl[3:0]})));
@@ -122,7 +126,8 @@ module core #(parameter N = 64)
                             .AluSrc(AluSrc), 
                             .regSel(regSel),
                             .aluSelect(aluSelect),
-                            .AluControl(AluControl), 
+                            .AluControl(AluControl),
+									 .exceptSignalD(exceptSignal_D_aux),
                             .Branch(Branch), 
                             .wArith(wArith),
                             .memWidth(memWidth),
@@ -143,15 +148,19 @@ module core #(parameter N = 64)
                             .exceptSignal_E(exceptSignal_E),
                             .breakSrc(breakSrc[1:0]),
                             .csrIn(csrIn),
+									 .csrIn_D(csrIn_D),
                             .csrOut(csrOut),
                             .CSR_addr(CSR_addr),
+									 .CSR_addr_D(CSR_addr_D),
                             .csrWriteEnable(csrWriteEnable),
                             .CSR_WriteEnable(CSR_WriteEnable),
+									 .CSR_WriteEnable_D(CSR_WriteEnable_D),
                             .coprocessorIOAddr(coprocessorIOAddr),
                             .coprocessorIOControl({cycleStall, coprocessorIOControl[3:0]}),
                             .coprocessorIODataOut(coprocessorIODataOut),
                             .coprocessorIODataIn(coprocessorIODataIn_register),
-                            .memWidth_M(memWidth_M)
+                            .memWidth_M(memWidth_M),
+									 .exceptSignal_D(exceptSignal_D)
                             );
                       
     imem instrMem (.addr0(IM_address[11:2]),
@@ -186,7 +195,7 @@ module core #(parameter N = 64)
                          .exceptSignal(exceptSignal),
                          .interruptSignal(interruptSignal),
                          .breakSrc(breakSrc),
-                         .PC_F(IM_address),
+                         .PC_F(IM_address),  // Add a separate PC when executing an exception maybe?
                          .CSR_WriteEnable(CSR_WriteEnable),
                          .CSR_addr(CSR_addr),
                          .CSR_In(csrIn),

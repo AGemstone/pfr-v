@@ -3,7 +3,7 @@
 module datapath #(parameter N = 64, W_CSR = 256)
                 (input logic reset, clk,
                  input logic [3:0] AluControl,  // 0010
-                 input logic [2:0] Branch, memWidth, // Add memWidth
+                 input logic [2:0] exceptSignalD, Branch, memWidth, // Add memWidth
                  input logic [1:0] regSel, memRead,  // Trying to ad regSel to the controlMux
                  input logic AluSrc,
                  input logic memWrite,
@@ -22,17 +22,21 @@ module datapath #(parameter N = 64, W_CSR = 256)
                  input logic [N-1:0] coprocessorIODataOut,
                  output logic [N-1:0] coprocessorIODataIn,
                  output logic [N-1:0] csrIn,
+					  output logic [N-1:0] csrIn_D,
                  output logic [N-1:0] IM_addr, DM_addr, DM_writeData,  // IM_addr add logic
                  output logic [11:0] CSR_addr,
+					  output logic [11:0] CSR_addr_D,
                  output logic DM_writeEnable, DM_readEnable,
                  output logic CSR_WriteEnable,
+					  output logic CSR_WriteEnable_D,
                  output logic [2:0] memWidth_M,
                  output logic [3:0] exceptSignal_F, 
                  output logic [6:0] exceptSignal_E, 
                  output logic [1:0] breakSrc,
 					  output logic [1:0] fwA_db, fwB_db,
 					  output logic hazard,
-					  output logic IF_ID_writeEnable);
+					  output logic IF_ID_writeEnable,
+					  output logic [2:0] exceptSignal_D);
                     
     logic PCSrc;
 	 logic PCSrc_no;
@@ -40,27 +44,28 @@ module datapath #(parameter N = 64, W_CSR = 256)
     logic [N-1:0] signImm_D, readData1_D, readData2_D;
     logic [N-1:0] readDataMasked_M, Mask_writeData;
     logic zero_E, overflow_E, sign_E;
+	 logic illegal_instr;
 	 logic PCEnable, ControlEnable;
     logic [N-1:0] csrRead_D, aluResultAtom0_E, aluResultAtom1_E;
     logic PC_enable;
 	 logic [1:0] fwA, fwB;
 	 logic [4:0] rs1, rs2;
-	 logic [19:0] controlMux;
+	 logic [23:0] controlMux;
 	 logic [N-1:0] fwA_out,fwB_out;
-	 logic [115:0] qIF_ID;
-    logic [418:0] qID_EX;
-    logic [402:0] qEX_MEM;
+	 logic [119:0] qIF_ID;
+    logic [431:0] qID_EX;
+    logic [415:0] qEX_MEM;
     logic [141:0] qMEM_WB;
 	 
 	 assign controlMux = ControlEnable ?  // ControlEnable
-                        {memWidth, wArith, aluSelect, regSel, AluSrc, AluControl, 
+                        {exceptSignalD, csrWriteEnable, memWidth, wArith, aluSelect, regSel, AluSrc, AluControl, 
                          Branch, memRead, memWrite, regWrite, memtoReg} :
                         'b0;
 
     fetch #(N) FETCH(.PCSrc_F(qID_EX[412]),  // Intentar pasar directo de decode, hay latencia
                      .clk(clk),
                      .reset(reset),
-                     .PC_TrapTrigger({{csrOut[3][N-1:2]}, {2'b0}}),
+                     .PC_TrapTrigger({{csrOut[3][N-1:2]}, {2'b0}}), // Agregar PC de la excepcion
                      .PC_TrapReturn(csrOut[4]),
                      .trapReturn(trapReturn),
                      .interruptSignal(trapTrigger),
@@ -68,7 +73,7 @@ module datapath #(parameter N = 64, W_CSR = 256)
                      .PC_enable(PCEnable),  // ~(|{coprocessorIOControl}) add later
                      .imem_addr_F(IM_addr));
 
-    flopre #(116) IF_ID(.clk(clk),
+    flopre #(120) IF_ID(.clk(clk),
 							   .enable(IF_ID_writeEnable),
 							   .reset(reset | IF_ID_reset),
 							   .d({controlMux, IM_addr, IM_readData}),
@@ -107,12 +112,13 @@ module datapath #(parameter N = 64, W_CSR = 256)
 										.rs1(rs1),
 										.rs2(rs2),
 										.PCBranch_D(PCBranch_D),
-										.PCSrc_D(PCSrc));
+										.PCSrc_D(PCSrc),
+										.illegal_instr(illegal_instr));
 
-	 flopr #(419) ID_EX (.clk(clk),
+	 flopr #(432) ID_EX (.clk(clk),
 								// .enable(ID_EX_writeEnable),
 	                     .reset(reset),
-								.d({qIF_ID[115:110], PCSrc, PCBranch_D, rs2, rs1, qIF_ID[108:96], qIF_ID[95:32], signImm_D, csrRead_D,
+								.d({qIF_ID[31:20], qIF_ID[116:110], PCSrc, PCBranch_D, rs2, rs1, qIF_ID[108:96], qIF_ID[95:32], signImm_D, csrRead_D,
                             readData1_D, readData2_D, qIF_ID[11:7]}), // Preguntar sobre este ultimo
 								.q(qID_EX));
                                        
@@ -136,9 +142,9 @@ module datapath #(parameter N = 64, W_CSR = 256)
                          .CSRRead_E(qID_EX[196:133]),
                          .result1_Atom(aluResultAtom1_E));
 
-	 flopr #(403) EX_MEM (.clk(clk),
+	 flopr #(416) EX_MEM (.clk(clk),
                          .reset(reset),
-                         .d({qID_EX[418:416], fwB_out, qID_EX[332:325], qID_EX[68:5], PCBranch_E, PC_4, // Agregar como input al decode
+                         .d({qID_EX[431:420], qID_EX[419:416], fwB_out, qID_EX[332:325], qID_EX[68:5], PCBranch_E, PC_4, // Agregar como input al decode
                              aluResult_E, aluResultAtom1_E, zero_E, overflow_E, sign_E,
 									  qID_EX[4:0]}),
                          .q(qEX_MEM));	
@@ -196,9 +202,13 @@ module datapath #(parameter N = 64, W_CSR = 256)
     assign DM_writeData = qEX_MEM[399:336]; //readData2_D;  // FwBOut por registro
     assign DM_addr = qEX_MEM[135:72];
 	 assign memWidth_M = qEX_MEM[402:400];
+	 assign exceptSignal_D = qIF_ID[119:117]; // exceptSignalD; // qIF_ID[119:117]; 
 
-    assign CSR_addr = qIF_ID[31:20];
-    assign CSR_WriteEnable = csrWriteEnable;
+    assign CSR_addr = qEX_MEM[415:404]; // qID_EX[431:420]; // qIF_ID[31:20]; // qEX_MEM[415:404]; // 
+	 assign CSR_addr_D = qID_EX[431:420]; // qIF_ID[31:20]; // IM_readData[31:20]; // qIF_ID[31:20]; // qID_EX[431:420];
+    assign CSR_WriteEnable = qEX_MEM[403]; // qID_EX[419]; // qIF_ID[116]; // qEX_MEM[403]; // // 
+	 assign CSR_WriteEnable_D = qID_EX[419]; // qIF_ID[116];// csrWriteEnable; // qID_EX[419];
+	 assign csrIn_D = aluResultAtom1_E;
     assign csrIn = qEX_MEM[71:8]; // aluResultAtom1_E;
 
 	 flopr #(142) MEM_WB (.clk(clk),

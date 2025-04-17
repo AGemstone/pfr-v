@@ -104,6 +104,26 @@ add wave -noupdate -label {GPR t3 / x28} -radix hexadecimal {/processor_tb/dut/d
 add wave -noupdate -label {GPR t4 / x29} -radix hexadecimal {/processor_tb/dut/dp/DECODE/registers/ram[29]}
 add wave -noupdate -label {GPR t5 / x30} -radix hexadecimal {/processor_tb/dut/dp/DECODE/registers/ram[30]}
 add wave -noupdate -label {GPR t6 / x31} -radix hexadecimal {/processor_tb/dut/dp/DECODE/registers/ram[31]}
+add wave -noupdate -divider {Core}
+add wave -noupdate -label {status_trapTrigger} -radix hexadecimal {/processor_tb/dut/status/trapTrigger}
+add wave -noupdate -label {status_trapReturn} {/processor_tb/dut/status/trapReturn}
+add wave -noupdate -label {status_mstatusCSREnable} {/processor_tb/dut/status/mstatusCSREnable}
+add wave -noupdate -label {status_csrIn} -radix hexadecimal {/processor_tb/dut/status/csrIn}
+add wave -noupdate -label {status_currentMode} {/processor_tb/dut/status/currentMode}
+add wave -noupdate -label {status_mstatus} -radix hexadecimal {/processor_tb/dut/status/mstatus}
+add wave -noupdate -label {eC_MIE} {/processor_tb/dut/eC/MIE}
+add wave -noupdate -label {eC_breakSrc} {/processor_tb/dut/eC/breakSrc}
+add wave -noupdate -label {eC_exceptSignal} -radix hexadecimal {/processor_tb/dut/eC/exceptSignal}
+add wave -noupdate -label {eC_interruptSignal} -radix hexadecimal {/processor_tb/dut/eC/interruptSignal}
+add wave -noupdate -label {eC_PC_F} -radix hexadecimal {/processor_tb/dut/eC/PC_F}
+add wave -noupdate -label {eC_CSR_In} -radix hexadecimal {/processor_tb/dut/eC/CSR_In}
+add wave -noupdate -label {eC_CSR_addr} {/processor_tb/dut/eC/CSR_addr}
+add wave -noupdate -label {eC_CSR_WriteEnable} {/processor_tb/dut/eC/CSR_WriteEnable}
+add wave -noupdate -label {eC_trapTrigger} -radix hexadecimal {/processor_tb/dut/eC/trapTrigger}
+add wave -noupdate -label {eC_mcause} -radix hexadecimal {/processor_tb/dut/eC/mcause}
+add wave -noupdate -label {eC_mtvec} -radix hexadecimal {/processor_tb/dut/eC/mtvec}
+add wave -noupdate -label {eC_mepc} -radix hexadecimal {/processor_tb/dut/eC/mepc}
+
 add wave -noupdate -divider {Fetch Registers}
 add wave -noupdate -label {PCBranch_F} -radix hexadecimal {/processor_tb/dut/dp/FETCH/PCBranch_F}
 add wave -noupdate -label {PCSrc_F} {/processor_tb/dut/dp/FETCH/PCSrc_F}

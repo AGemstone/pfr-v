@@ -20,7 +20,8 @@ module decode #(parameter N = 64, W_CSR = 8)
                     output logic[N-1:0] readDataDB_D,
 						  output logic[4:0] rs1, rs2,
 						  output logic[N-1:0] PCBranch_D,
-						  output logic PCSrc_D);
+						  output logic PCSrc_D,
+						  output logic illegal_instr);
     
     logic[4:0] rs1_internal;
     logic[N-1:0] writeData3;
@@ -84,6 +85,27 @@ module decode #(parameter N = 64, W_CSR = 8)
             3'b111: PCSrc = 1'b1;  // Branch unconditionally
 				default: PCSrc = 1'b0;
 			endcase
+	 end
+
+	 always_comb begin
+		  // Default to valid instruction
+		  illegal_instr = 1'b0;
+
+		  // Check for invalid opcodes or unsupported instructions
+		  case (instr_D[6:0])
+			   7'b0000011,  // Load instructions
+			   7'b0100011,  // Store instructions
+			   7'b0110011,  // R-type instructions
+			   7'b0010011,  // I-type instructions
+			   7'b1100011,  // Branch instructions
+			   7'b1101111,  // JAL
+			   7'b1100111,  // JALR
+			   7'b1110011,  // System instructions (e.g., CSR, ECALL, EBREAK)
+				7'b0000000:  // When initializing or stalling
+					 illegal_instr = 1'b0;  // Valid opcode
+			   default:
+					 illegal_instr = 1'b1;  // Invalid opcode
+		  endcase
 	 end
 	 
 	 assign PCSrc_D = PCSrc;
