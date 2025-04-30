@@ -3,6 +3,7 @@
 module decode #(parameter N = 64, W_CSR = 8)
                     (input logic regWrite_D, clk,
                     input logic[2:0] Branch,
+						  input logic branch_hazard,
                     input logic regSel0,
                     input logic weDB_D, csrDB_D,
 						  input logic AluSrc,
@@ -32,7 +33,7 @@ module decode #(parameter N = 64, W_CSR = 8)
 	 logic[N-1:0] readData1_Br, readData2_Br;
 	 logic PCSrc;
     
-    regfile	registers(.clk(clk), 
+    regfile	registers(.clk(~clk), 
                       .we3(regWrite_D | weDB_D), 
                       .wa3(weDB_D ? writeRegDB_D : wa3_D), // instr_D[11:7]),  // bits del registro
                       .ra1(rs1_internal), 
@@ -63,8 +64,18 @@ module decode #(parameter N = 64, W_CSR = 8)
     assign readData1_D = (rs1_internal == wa3_D && wa3_D != 5'b0) ? writeData3 : readData1_internal;
     assign readData2_D = (instr_D[24:20] == wa3_D && wa3_D != 5'b0) ? writeData3 : readData2_internal;
 	 
-	 assign readData1_Br = (fwA_Br != 2'b0 && Branch != 3'b0) ? fwA_D : readData1_D;
-	 assign readData2_Br = (fwB_Br != 2'b0 && Branch != 3'b0) ? fwB_D : readData2_D;
+	 // Enhanced branch forwarding logic
+    // Priority: EX -> MEM -> WB -> Register File
+    assign readData1_Br = (fwA_Br == 2'b10) ? fwA_D :        // Forward from EX/MEM
+                         (fwA_Br == 2'b01) ? writeData3 :   // Forward from MEM/WB
+                         readData1_D;                       // Default to register value
+
+    assign readData2_Br = (fwB_Br == 2'b10) ? fwB_D :        // Forward from EX/MEM
+                         (fwB_Br == 2'b01) ? writeData3 :   // Forward from MEM/WB
+                         readData2_D;                       // Default to register value
+	 
+	 // assign readData1_Br = (fwA_Br != 2'b0 && Branch != 3'b0) ? fwA_D : readData1_D;
+	 // assign readData2_Br = (fwB_Br != 2'b0 && Branch != 3'b0) ? fwB_D : readData2_D;
 	 
 	 // Assign internal signals to output ports
     assign rs1 = rs1_internal;
@@ -108,7 +119,7 @@ module decode #(parameter N = 64, W_CSR = 8)
 		  endcase
 	 end
 	 
-	 assign PCSrc_D = PCSrc;
+	 assign PCSrc_D = branch_hazard ? 1'b0 : PCSrc;
 
     // Coprocessor signals
     assign readDataDB_D = csrDB_D ? csrRead_D : readRegDataDB;

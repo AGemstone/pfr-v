@@ -88,7 +88,7 @@ def run_test(register=None, max_duration=None):
             # Generate random values
             flipped_bit = random.randint(0, 63)
             data_flip = 1 << flipped_bit
-            delay = random.randint(12, max_delay)
+            delay = random.randint(1, max_delay)
             generate_fault_injector(register, data_flip, delay, max_duration)
             download_elf()
             line = proc.stdout.readline().decode("utf-8")

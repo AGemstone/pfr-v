@@ -9,6 +9,6 @@ unsigned long sum(unsigned long n) {
 }
 
 int main(void) {
-  unsigned long result_1 = sum(0xdc0de); // sum(2); //  
+  unsigned long result_1 = sum(1); // sum(0xdc0de); // sum(2); //  
   return 0;
 }

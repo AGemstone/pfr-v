@@ -2,9 +2,9 @@
 
 module datapath #(parameter N = 64, W_CSR = 256)
                 (input logic reset, clk,
-                 input logic [3:0] AluControl,  // 0010
-                 input logic [2:0] exceptSignalD, Branch, memWidth, // Add memWidth
-                 input logic [1:0] regSel, memRead,  // Trying to ad regSel to the controlMux
+                 input logic [3:0] AluControl,
+                 input logic [2:0] exceptSignalD, Branch, memWidth,
+                 input logic [1:0] regSel, memRead,
                  input logic AluSrc,
                  input logic memWrite,
                  input logic regWrite,	
@@ -15,7 +15,7 @@ module datapath #(parameter N = 64, W_CSR = 256)
                  input logic trapReturn,
                  input logic trapTrigger,
                  input logic [31:0] IM_readData, 
-                 input logic [N-1:0] DM_readData, // Add
+                 input logic [N-1:0] DM_readData,
                  input logic [N-1:0] csrOut[0:W_CSR-1],
                  input logic [14:0] coprocessorIOAddr,
                  input logic [4:0] coprocessorIOControl,
@@ -39,6 +39,7 @@ module datapath #(parameter N = 64, W_CSR = 256)
 					  output logic [2:0] exceptSignal_D);
                     
     logic PCSrc;
+	 logic branch_hazard;
 	 logic PCSrc_no;
     logic [N-1:0] PCBranch_E, PCBranch_D, PC_4, aluResult_E, writeData_E, writeData3; 
     logic [N-1:0] signImm_D, readData1_D, readData2_D;
@@ -53,16 +54,16 @@ module datapath #(parameter N = 64, W_CSR = 256)
 	 logic [23:0] controlMux;
 	 logic [N-1:0] fwA_out,fwB_out;
 	 logic [119:0] qIF_ID;
-    logic [431:0] qID_EX;
+    logic [434:0] qID_EX;
     logic [415:0] qEX_MEM;
     logic [141:0] qMEM_WB;
 	 
-	 assign controlMux = ControlEnable ?  // ControlEnable
+	 assign controlMux = ControlEnable ?
                         {exceptSignalD, csrWriteEnable, memWidth, wArith, aluSelect, regSel, AluSrc, AluControl, 
                          Branch, memRead, memWrite, regWrite, memtoReg} :
                         'b0;
 
-    fetch #(N) FETCH(.PCSrc_F(qID_EX[412]),  // Intentar pasar directo de decode, hay latencia
+    fetch #(N) FETCH(.PCSrc_F(qID_EX[412]),
                      .clk(clk),
                      .reset(reset),
                      .PC_TrapTrigger({{csrOut[3][N-1:2]}, {2'b0}}), // Agregar PC de la excepcion
@@ -86,16 +87,17 @@ module datapath #(parameter N = 64, W_CSR = 256)
     decode #(N, W_CSR) DECODE(.regWrite_D(qMEM_WB[70]),  // regWrite Output MEM_WB
                               .clk(clk),
                               .Branch(qIF_ID[103:101]),// Branch),
+										.branch_hazard(branch_hazard),
                               .PC_4(qEX_MEM[199:136]),
 										.PC_D(qIF_ID[95:32]),  // IM_addr
 										.AluSrc(qIF_ID[108]),
                               .writeData3_D(writeData3),  // Output de writeback
                               .regSel0(qIF_ID[109]),  // regSel[0]
                               .instr_D(qIF_ID[31:0]),
-										.wa3_D(qMEM_WB[4:0]), // No distingue entre instrucciones jal ? registro del fetch : 
+										.wa3_D(qMEM_WB[4:0]),
                               .signImm_D(signImm_D),
                               .csrOut(csrOut),
-                              .csrRead_D(csrRead_D),
+                              .csrRead_D(csrRead_D),			
 										.fwA_Br(fwA),
 										.fwB_Br(fwB),
 										.fwA_D(fwA_out),
@@ -115,11 +117,11 @@ module datapath #(parameter N = 64, W_CSR = 256)
 										.PCSrc_D(PCSrc),
 										.illegal_instr(illegal_instr));
 
-	 flopr #(432) ID_EX (.clk(clk),
+	 flopr #(435) ID_EX (.clk(clk),
 								// .enable(ID_EX_writeEnable),
 	                     .reset(reset),
-								.d({qIF_ID[31:20], qIF_ID[116:110], PCSrc, PCBranch_D, rs2, rs1, qIF_ID[108:96], qIF_ID[95:32], signImm_D, csrRead_D,
-                            readData1_D, readData2_D, qIF_ID[11:7]}), // Preguntar sobre este ultimo
+								.d({qIF_ID[119:117], qIF_ID[31:20], qIF_ID[116:110], PCSrc, PCBranch_D, rs2, rs1, qIF_ID[108:96], qIF_ID[95:32], signImm_D, csrRead_D,
+                            readData1_D, readData2_D, qIF_ID[11:7]}),
 								.q(qID_EX));
                                        
     execute #(N) EXECUTE(.AluSrc(qID_EX[337]),  // AluSrc
@@ -160,41 +162,47 @@ module datapath #(parameter N = 64, W_CSR = 256)
                        .overflow_E(qEX_MEM[6]),
                        .PCSrc_W(PCSrc_no));  // Output para Fetch, no va para el registro
 
-    forwarding FORWARDING (.EX_MEM_RegWrite(qEX_MEM[329]),  // Done
-                           .MEM_WB_RegWrite(qMEM_WB[70]),  // Done
-                           .EX_MEM_RegisterRd(qEX_MEM[4:0]),  // Done
-                           .MEM_WB_RegisterRd(qMEM_WB[4:0]),  // Done
-                           .ID_EX_RegisterRs1(qID_EX[342:338]), // Done
-                           .ID_EX_RegisterRs2(qID_EX[347:343]),  // Done
-                           .fwA(fwA),  // Output
-                           .fwB(fwB));  // Output
+    forwarding FORWARDING (.EX_MEM_RegWrite(qEX_MEM[329]),
+	                        .EX_MEM_MemRead(qEX_MEM[331]),
+                           .MEM_WB_RegWrite(qMEM_WB[70]),
+                           .EX_MEM_RegisterRd(qEX_MEM[4:0]),
+                           .MEM_WB_RegisterRd(qMEM_WB[4:0]),
+                           .ID_EX_RegisterRs1(qID_EX[342:338]),
+                           .ID_EX_RegisterRs2(qID_EX[347:343]),
+                           .fwA(fwA),
+                           .fwB(fwB));
 
-	 mux3 FWA (.s(fwA),  // COPY 2 for BRANCHING
-              .d0(qID_EX[132:69]), // readData1_E
+	 mux3 FWA (.s(fwA),
+              .d0(qID_EX[132:69]),
               .d1(writeData3),
-              .d2(qEX_MEM[135:72]),  // aluResult_E
+              .d2(qEX_MEM[135:72]),
               .y(fwA_out));
 
     mux3 FWB (.s(fwB),
-             .d0(qID_EX[68:5]),  // Done readData2_E
+             .d0(qID_EX[68:5]),
              .d1(writeData3),
-             .d2(qEX_MEM[135:72]), // aluResult_E
+             .d2(qEX_MEM[135:72]),
              .y(fwB_out));
 
 
-    hazard HDU (.ID_EX_MemRead(qID_EX[329]),  // Done
+    hazard HDU (.clk(clk),
+	             .reset(reset),
+	             .ID_EX_MemRead(qID_EX[328]),  // qID_EX[329]
 					 .IF_ID_Branch(qIF_ID[103:101]),
-                .ID_EX_RegisterRd(qID_EX[4:0]),  // Done
+                .ID_EX_RegisterRd(qID_EX[4:0]),
 					 .EX_MEM_RegisterRd(qEX_MEM[4:0]),
 					 .MEM_WB_RegisterRd(qMEM_WB[4:0]),
-                .IF_ID_RegisterRs1(rs1),  // Arreglar decode para que tenga este output 
+					 .interruptSignal_D(|{qID_EX[434:432]} && |{csrOut[2]}),
+					 // .interruptSignal_E(),
+                .IF_ID_RegisterRs1(rs1),
                 .IF_ID_RegisterRs2(rs2),
 					 .ID_EX_PCSrc(qID_EX[412]),
 					 .PCSrc(PCSrc),
                 .ControlEnable(ControlEnable),
                 .PCEnable(PCEnable),
                 .IF_ID_writeEnable(IF_ID_writeEnable),
-				    .IF_ID_reset(IF_ID_reset)	 // output IF_ID_reset
+				    .IF_ID_reset(IF_ID_reset),
+					 .branch_hazard(branch_hazard)
                 );
 
     assign DM_writeEnable = qEX_MEM[330]; // memWrite;
