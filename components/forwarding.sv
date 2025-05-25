@@ -1,45 +1,49 @@
 module forwarding (
     input logic EX_MEM_RegWrite, MEM_WB_RegWrite,
-    input logic EX_MEM_MemRead,  // Add this to identify load instructions
+    input logic MEM_WB_MemRead,  // Add this to identify load instructions
     input logic [4:0] EX_MEM_RegisterRd, MEM_WB_RegisterRd,
     input logic [4:0] ID_EX_RegisterRs1, ID_EX_RegisterRs2,
 
     output logic [1:0] fwA,
     output logic [1:0] fwB
 );
-    // Forwarding for operand A (rs1)
-    always_comb begin
-        // EX hazard (highest priority)
-        if (EX_MEM_RegWrite && 
-            (EX_MEM_RegisterRd != 0) && 
-            (EX_MEM_RegisterRd == ID_EX_RegisterRs1)) begin
-            fwA = 2'b10;  // Forward from EX/MEM pipeline register
-        end
-        // MEM hazard (lower priority)
-        else if (MEM_WB_RegWrite && 
-                (MEM_WB_RegisterRd != 0) && 
-                (MEM_WB_RegisterRd == ID_EX_RegisterRs1)) begin
-            fwA = 2'b01;  // Forward from MEM/WB pipeline register
-        end
-        else begin
-            fwA = 2'b00;  // No forwarding (use register file value)
-        end
-    end
 
-    // Forwarding for operand B (rs2) - same logic as for A
-    always_comb begin
-        if (EX_MEM_RegWrite && 
-            (EX_MEM_RegisterRd != 0) && 
-            (EX_MEM_RegisterRd == ID_EX_RegisterRs2)) begin
-            fwB = 2'b10;
+    assign load_use_case_A = (MEM_WB_MemRead && 
+	                           EX_MEM_RegisterRd == ID_EX_RegisterRs1 && 
+										EX_MEM_RegisterRd == MEM_WB_RegisterRd);
+
+	 assign load_use_case_B = (MEM_WB_MemRead && 
+	                           EX_MEM_RegisterRd == ID_EX_RegisterRs2 && 
+										EX_MEM_RegisterRd == MEM_WB_RegisterRd);
+    
+    always_comb
+        begin
+        // EX hazard
+        if (EX_MEM_RegWrite &&
+        (EX_MEM_RegisterRd != 0) &&
+        (EX_MEM_RegisterRd == ID_EX_RegisterRs1) &&
+		  ~load_use_case_A) 
+            fwA = 'b10;
+        // MEM hazard
+        else if (MEM_WB_RegWrite &&
+        (MEM_WB_RegisterRd != 0) &&
+        (MEM_WB_RegisterRd == ID_EX_RegisterRs1))
+            fwA = 'b01;
+        else
+            fwA = 0;
+        
+        // EX hazard
+        if (EX_MEM_RegWrite &&
+        (EX_MEM_RegisterRd != 0) &&
+        (EX_MEM_RegisterRd == ID_EX_RegisterRs2) &&
+		  ~load_use_case_B) 
+            fwB = 'b10;
+        // MEM hazard
+        else if (MEM_WB_RegWrite &&
+        (MEM_WB_RegisterRd != 0) &&
+        (MEM_WB_RegisterRd == ID_EX_RegisterRs2))
+            fwB = 'b01;
+        else
+            fwB = 0;
         end
-        else if (MEM_WB_RegWrite && 
-                (MEM_WB_RegisterRd != 0) && 
-                (MEM_WB_RegisterRd == ID_EX_RegisterRs2)) begin
-            fwB = 2'b01;
-        end
-        else begin
-            fwB = 2'b00;
-        end
-    end
 endmodule

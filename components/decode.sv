@@ -61,8 +61,8 @@ module decode #(parameter N = 64, W_CSR = 8)
     assign rs1_internal = regSel0 ? 5'b0: instr_D[19:15];
 	 
 	 // Forwarding logic
-    assign readData1_D = (rs1_internal == wa3_D && wa3_D != 5'b0) ? writeData3 : readData1_internal;
-    assign readData2_D = (instr_D[24:20] == wa3_D && wa3_D != 5'b0) ? writeData3 : readData2_internal;
+    assign readData1_D = ((regWrite_D || Branch != 3'b000) && rs1_internal == wa3_D && wa3_D != 5'b0) ? writeData3 : readData1_internal;
+    assign readData2_D = ((regWrite_D || Branch != 3'b000) && instr_D[24:20] == wa3_D && wa3_D != 5'b0) ? writeData3 : readData2_internal;
 	 
 	 // Enhanced branch forwarding logic
     // Priority: EX -> MEM -> WB -> Register File

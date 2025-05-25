@@ -1,11 +1,11 @@
 module hazard (
     input logic clk, reset,
-    input logic ID_EX_MemRead, PCSrc, ID_EX_PCSrc, interruptSignal_D,
+    input logic ID_EX_MemRead, PCSrc, ID_EX_PCSrc, interruptSignal_D, // EX_MEM_MemRead,
     input logic [2:0] IF_ID_Branch,
-    input logic [4:0] ID_EX_RegisterRd, IF_ID_RegisterRs1, IF_ID_RegisterRs2,
-    input logic [4:0] EX_MEM_RegisterRd, MEM_WB_RegisterRd,
+    input logic [4:0] ID_EX_RegisterRd, IF_ID_RegisterRs1, IF_ID_RegisterRs2, // ID_EX_RegisterRs1, ID_EX_RegisterRs2,
+    input logic [4:0] EX_MEM_RegisterRd, // MEM_WB_RegisterRd,
 	 output logic branch_hazard,
-    output logic PCEnable, ControlEnable, IF_ID_writeEnable, IF_ID_reset,
+    output logic PCEnable, ControlEnable, IF_ID_writeEnable, IF_ID_reset, // ID_EX_writeEnable,
     output logic [1:0] cnt
 );
     logic [1:0] stall_counter = 0;
@@ -23,6 +23,12 @@ module hazard (
     //                      (MEM_WB_RegisterRd != 5'b0) &&
     //                      ((IF_ID_RegisterRs1 == MEM_WB_RegisterRd) || 
     //                       (IF_ID_RegisterRs2 == MEM_WB_RegisterRd));
+	 
+
+	 // assign load_use_hazard = EX_MEM_MemRead && 
+    //                    (EX_MEM_RegisterRd != 0) &&
+    //                    ((ID_EX_RegisterRs1 == EX_MEM_RegisterRd) || 
+    //                     (ID_EX_RegisterRs2 == EX_MEM_RegisterRd));
 
     assign branch_hazard_aux = (branch_dep_EX || branch_dep_MEM); // || branch_dep_WB);
 	 
@@ -41,7 +47,7 @@ module hazard (
     end
 
     always_comb begin
-        if (ID_EX_MemRead & ((ID_EX_RegisterRd == IF_ID_RegisterRs1) | 
+		  if (ID_EX_MemRead & ((ID_EX_RegisterRd == IF_ID_RegisterRs1) | 
                             (ID_EX_RegisterRd == IF_ID_RegisterRs2))) begin
             PCEnable = 1'b0;
             ControlEnable = 1'b0;
@@ -64,6 +70,7 @@ module hazard (
         end
     end
 
+	 // assign ID_EX_writeEnable = ~load_use_hazard;
     assign cnt = stall_counter;
     assign IF_ID_reset = ID_EX_PCSrc || interruptSignal_D;
 endmodule

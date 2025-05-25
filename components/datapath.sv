@@ -55,8 +55,8 @@ module datapath #(parameter N = 64, W_CSR = 256)
 	 logic [N-1:0] fwA_out,fwB_out;
 	 logic [119:0] qIF_ID;
     logic [434:0] qID_EX;
-    logic [415:0] qEX_MEM;
-    logic [141:0] qMEM_WB;
+    logic [425:0] qEX_MEM;
+    logic [142:0] qMEM_WB;
 	 
 	 assign controlMux = ControlEnable ?
                         {exceptSignalD, csrWriteEnable, memWidth, wArith, aluSelect, regSel, AluSrc, AluControl, 
@@ -144,9 +144,9 @@ module datapath #(parameter N = 64, W_CSR = 256)
                          .CSRRead_E(qID_EX[196:133]),
                          .result1_Atom(aluResultAtom1_E));
 
-	 flopr #(416) EX_MEM (.clk(clk),
+	 flopr #(426) EX_MEM (.clk(clk),
                          .reset(reset),
-                         .d({qID_EX[431:420], qID_EX[419:416], fwB_out, qID_EX[332:325], qID_EX[68:5], PCBranch_E, PC_4, // Agregar como input al decode
+                         .d({qID_EX[347:338], qID_EX[431:420], qID_EX[419:416], fwB_out, qID_EX[332:325], qID_EX[68:5], PCBranch_E, PC_4, // Agregar como input al decode
                              aluResult_E, aluResultAtom1_E, zero_E, overflow_E, sign_E,
 									  qID_EX[4:0]}),
                          .q(qEX_MEM));	
@@ -156,14 +156,14 @@ module datapath #(parameter N = 64, W_CSR = 256)
                    .memWidth(qEX_MEM[402:400]),
                    .exceptSignal(exceptSignal_E));
 
-    memory #(N) MEMORY(.Branch_E(qEX_MEM[335:333]),  // Branch
-                       .zero_E(qEX_MEM[7]),
-                       .sign_E(qEX_MEM[5]),
-                       .overflow_E(qEX_MEM[6]),
-                       .PCSrc_W(PCSrc_no));  // Output para Fetch, no va para el registro
+    memory #(N) MEMORY(.DM_readData_E(DM_readData),  // Branch
+                       .memWidth(qEX_MEM[402:400]),
+                       .signedRead(qEX_MEM[332]),
+                       .byteOffset(qEX_MEM[74:72]),
+                       .readDataMasked_M(readDataMasked_M));
 
     forwarding FORWARDING (.EX_MEM_RegWrite(qEX_MEM[329]),
-	                        .EX_MEM_MemRead(qEX_MEM[331]),
+	                        .MEM_WB_MemRead(qMEM_WB[142]),
                            .MEM_WB_RegWrite(qMEM_WB[70]),
                            .EX_MEM_RegisterRd(qEX_MEM[4:0]),
                            .MEM_WB_RegisterRd(qMEM_WB[4:0]),
@@ -174,13 +174,13 @@ module datapath #(parameter N = 64, W_CSR = 256)
 
 	 mux3 FWA (.s(fwA),
               .d0(qID_EX[132:69]),
-              .d1(writeData3),
+              .d1(qID_EX[327] ? writeData3 : qMEM_WB[141:78]), // .d1(writeData3), //
               .d2(qEX_MEM[135:72]),
               .y(fwA_out));
 
     mux3 FWB (.s(fwB),
              .d0(qID_EX[68:5]),
-             .d1(writeData3),
+             .d1(qID_EX[327] ? writeData3 : qMEM_WB[141:78]), // .d1(writeData3), // 
              .d2(qEX_MEM[135:72]),
              .y(fwB_out));
 
@@ -188,28 +188,32 @@ module datapath #(parameter N = 64, W_CSR = 256)
     hazard HDU (.clk(clk),
 	             .reset(reset),
 	             .ID_EX_MemRead(qID_EX[328]),  // qID_EX[329]
+					 // .EX_MEM_MemRead(qEX_MEM[331]),
 					 .IF_ID_Branch(qIF_ID[103:101]),
                 .ID_EX_RegisterRd(qID_EX[4:0]),
 					 .EX_MEM_RegisterRd(qEX_MEM[4:0]),
-					 .MEM_WB_RegisterRd(qMEM_WB[4:0]),
+					 // .MEM_WB_RegisterRd(qMEM_WB[4:0]),
 					 .interruptSignal_D(|{qID_EX[434:432]} && |{csrOut[2]}),
 					 // .interruptSignal_E(),
                 .IF_ID_RegisterRs1(rs1),
                 .IF_ID_RegisterRs2(rs2),
+					 // .ID_EX_RegisterRs1(qID_EX[342:338]),
+					 // .ID_EX_RegisterRs2(qID_EX[347:343]),
 					 .ID_EX_PCSrc(qID_EX[412]),
 					 .PCSrc(PCSrc),
                 .ControlEnable(ControlEnable),
                 .PCEnable(PCEnable),
                 .IF_ID_writeEnable(IF_ID_writeEnable),
+					 // .ID_EX_writeEnable(ID_EX_writeEnable),
 				    .IF_ID_reset(IF_ID_reset),
 					 .branch_hazard(branch_hazard)
                 );
 
-    assign DM_writeEnable = qEX_MEM[330]; // memWrite;
-    assign DM_readEnable = qEX_MEM[331]; // memRead[0];
-    assign DM_writeData = qEX_MEM[399:336]; //readData2_D;  // FwBOut por registro
-    assign DM_addr = qEX_MEM[135:72];
-	 assign memWidth_M = qEX_MEM[402:400];
+    assign DM_writeEnable = qID_EX[327]; // qEX_MEM[330]; // memWrite; // qEX_MEM[330]; que salga del componente directo en vez del registro
+    assign DM_readEnable = qID_EX[328]; // qEX_MEM[331]; // memRead[0]; // qEX_MEM[331];
+    assign DM_writeData = fwB_out; // qEX_MEM[399:336]; // fwB_out; // readData2_D; // qEX_MEM[399:336];
+    assign DM_addr = aluResult_E; // qEX_MEM[135:72]; // aluResult_E; // qEX_MEM[135:72];
+	 assign memWidth_M = qID_EX[418:416]; // qEX_MEM[402:400];
 	 assign exceptSignal_D = qIF_ID[119:117]; // exceptSignalD; // qIF_ID[119:117]; 
 
     assign CSR_addr = qEX_MEM[415:404]; // qID_EX[431:420]; // qIF_ID[31:20]; // qEX_MEM[415:404]; // 
@@ -219,19 +223,15 @@ module datapath #(parameter N = 64, W_CSR = 256)
 	 assign csrIn_D = aluResultAtom1_E;
     assign csrIn = qEX_MEM[71:8]; // aluResultAtom1_E;
 
-	 flopr #(142) MEM_WB (.clk(clk),
+	 flopr #(143) MEM_WB (.clk(clk),
                          .reset(reset), 
-                         .d({DM_readData, qEX_MEM[402:400], qEX_MEM[332], qEX_MEM[74:72], qEX_MEM[329:328], qEX_MEM[135:72], qEX_MEM[4:0]}),
+                         .d({qEX_MEM[331], readDataMasked_M, qEX_MEM[402:400], qEX_MEM[332], qEX_MEM[74:72], qEX_MEM[329:328], qEX_MEM[135:72], qEX_MEM[4:0]}),
                          .q(qMEM_WB));
 
     writeback #(N) WRITEBACK(.aluResult_W(qMEM_WB[68:5]), 
-                             // .DM_readData_W(readDataMasked_M), // (qMEM_WB[68:5]), 
                              .memtoReg(qMEM_WB[69]),   // memtoReg
-                             .writeData3_W(writeData3),
-									  .DM_readData_W(DM_readData),// qMEM_WB[141:78]), // DM_readData
-                             .memWidth(qMEM_WB[77:75]),  //memWidth
-                             .signedRead(qMEM_WB[74]),  //memRead[1]
-                             .byteOffset(qMEM_WB[73:71]));
+									  .readDataMasked_W(qMEM_WB[141:78]),
+                             .writeData3_W(writeData3));
 
     assign breakSrc = {exceptSignal_E[6], exceptSignal_F[3]};
 	 assign fwA_db = fwA;
