@@ -8,16 +8,16 @@ _start:
     # Store values directly into memory at specific addresses using s0 as base
     li t1, 0x12345678           # Value 1
     nop
-    sd t1, 0(s0)                # Store Value 1 at address in s0 (0x1000)
+    sd t1, 0(s0)                # Store Value 1 at address in s0 (0x100)
 
     li t2, 0x87654321           # Value 2
-    sd t2, 8(s0)                # Store Value 2 at address (0x1000 + 8)
+    sd t2, 8(s0)                # Store Value 2 at address (0x100 + 8)
 
     li t3, 0x11223344           # Value 3
-    sd t3, 16(s0)               # Store Value 3 at address (0x1000 + 16)
+    sd t3, 16(s0)               # Store Value 3 at address (0x100 + 16)
 
     li t4, 0x55667788           # Value 4
-    sd t4, 24(s0)               # Store Value 4 at address (0x1000 + 24)
+    sd t4, 24(s0)               # Store Value 4 at address (0x100 + 24)
 
     # Load values back from memory to verify correctness
     ld t1, 0(s0)                # Load Value 1 back into t1

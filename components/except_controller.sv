@@ -72,7 +72,7 @@ module except_controller #(parameter N = 64)
     // no async interrupts for now 
     assign mcauseCode[5:0] = async ? interruptCode : exceptCode;
     assign mcauseCode[N-2:6] = 'b0;
-    assign mcauseCode[N-1] = async & MIE;
+    assign mcauseCode[N-1] = async;
     assign trapTrigger = async ? ({16{MIE}} & exceptSignal) : exceptSignal;
 
 endmodule

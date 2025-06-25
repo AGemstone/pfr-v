@@ -1,11 +1,11 @@
 module hazard (
     input logic clk, reset,
-    input logic ID_EX_MemRead, PCSrc, ID_EX_PCSrc, interruptSignal_D, // EX_MEM_MemRead,
+    input logic ID_EX_MemRead, PCSrc, ID_EX_PCSrc, interruptSignal_D, trapTrigger,
     input logic [2:0] IF_ID_Branch,
     input logic [4:0] ID_EX_RegisterRd, IF_ID_RegisterRs1, IF_ID_RegisterRs2, // ID_EX_RegisterRs1, ID_EX_RegisterRs2,
     input logic [4:0] EX_MEM_RegisterRd, // MEM_WB_RegisterRd,
 	 output logic branch_hazard,
-    output logic PCEnable, ControlEnable, IF_ID_writeEnable, IF_ID_reset, // ID_EX_writeEnable,
+    output logic PCEnable, ControlEnable, IF_ID_writeEnable, IF_ID_reset,
     output logic [1:0] cnt
 );
     logic [1:0] stall_counter = 0;
@@ -63,6 +63,11 @@ module hazard (
             ControlEnable = 1'b0;
             IF_ID_writeEnable = 1'b0;
         end
+		  else if (trapTrigger) begin
+		      PCEnable = 1'b0;
+            ControlEnable = 1'b0;
+            IF_ID_writeEnable = 1'b0;
+		  end
         else begin
             PCEnable = 1'b1;
             ControlEnable = 1'b1;

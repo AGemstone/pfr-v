@@ -121,7 +121,7 @@ with open(file_path, "r") as f:
     # csum regs
     critical_registers = [1, 2, 8, 10, 14, 15]
     # cmatmul regs
-    critical_registers = [1, 2, 8, 10, 11, 12, 13, 14, 15, 31]
+    # critical_registers = [1, 2, 8, 10, 11, 12, 13, 14, 15, 31]
     # dtn regs
     # critical_registers = [1, 2, 5, 8, 10, 11, 12, 13, 14, 15, 31]
     results_by_register = []
@@ -134,6 +134,7 @@ with open(file_path, "r") as f:
     for reg in range(31):
         run_results = []
         bins = np.zeros(len(bin_ranges))
+        print(reg)
         register_summaries = summary_by_register[reg]
         register_memdumps = memdump_by_register[reg]
         for summary, memdump in zip(register_summaries, register_memdumps):

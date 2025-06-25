@@ -58,7 +58,6 @@ start:
 	
 	# Notify coprocessor the program has finished
 	ebreak
-
 never_ret_done:
 	j never_ret_done
 never_ret_err:

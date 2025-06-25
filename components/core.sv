@@ -17,6 +17,7 @@ module core #(parameter N = 64)
     logic[1:0] regSel, memRead;
     logic[2:0] Branch, memWidth, memWidth_M;
     logic[2:0] breakSrc;
+	 logic c_breakSrc;
     logic trapReturn;
     
     // Memory signals
@@ -113,13 +114,19 @@ module core #(parameter N = 64)
                  .memtoReg(memtoReg), 
                  .memRead(memRead),
                  .aluSelect(aluSelect),
-                 .breakSrc(breakSrc[2]),
+                 .breakSrc(c_breakSrc), // breakSrc[2]),  // Adelantado un ciclo de reloj.
                  .trapReturn(trapReturn),
                  .csrWriteEnable(csrWriteEnable),
                  .exceptSignal_D(exceptSignal_D_aux),
                  .memWrite(memWrite),
                  .privMode(privMode),
                  .coprocessorStall((|{cycleStall, coprocessorIOControl[3:0]})));
+
+	 flopr csr_stall(.clk(clk),
+	                 .reset(reset),
+						  .d(c_breakSrc),
+						  .q(breakSrc[2]));
+	 
                     
     datapath #(N, W_CSR) dp(.reset(reset), 
                             .clk(clk), 
